@@ -1,0 +1,17 @@
+.die-container {
+  display: grid;
+  grid-template: auto auto / repeat(6, 1fr);
+  margin: auto;
+  width: 50%;
+}
+
+.die-button {
+  text-align: center;
+  border-color: black;
+  border-style: solid;
+  border-width: 5%;
+}
+
+.die-button:active {
+  background-color: grey;
+}
