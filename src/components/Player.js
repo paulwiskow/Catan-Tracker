@@ -5,9 +5,35 @@ import Build from "./Build";
 export default function Player(props) {
     const [type, setType] = React.useState(true)
     const [value, setValue] = React.useState(props.name)
+    const [buildings, setBuildings] = React.useState([{}]) // create two unique states for buildings that are in sync with one another, one here and one in parent
     const inputRef = React.useRef(null)
 
-    function click(event) {
+    function createNewBuilding() {
+        const diceMap = new Map()
+        diceMap["wood"] = -1 // dice roll
+        diceMap["brick"] = -1
+        diceMap["sheep"] = -1
+        diceMap["wheat"] = -1
+        diceMap["ore"] = -1
+
+        let newBuilding = {
+            index: props.buildings.length,
+            isCity: false,
+            diceRoll: diceMap,
+        }
+        let tempArr = Array.from(buildings)
+        tempArr[tempArr.length - 1] = newBuilding
+        tempArr.push({})
+
+        setBuildings(tempArr)
+        props.stateChange(props.num, props.resGained, props.resBlocked, tempArr)
+    }
+
+    const buildingComponents = buildings.map(building => {
+        return <Build create={createNewBuilding} />
+    })
+
+    function changeName(event) {
         setType(oldType => !oldType)
         if (!type) {
             props.nameChange(value, props.num)
@@ -22,7 +48,7 @@ export default function Player(props) {
 
     function handleEnter(event) {
         if (event.key === "Enter") {
-            click(event)
+            changeName(event)
         }
     }
 
@@ -48,13 +74,13 @@ export default function Player(props) {
                     ref={inputRef} 
                     onKeyDown={(event) => handleEnter(event)}
                 />
-                <button className="name-button" onClick={(event) => click(event)} >
+                <button className="name-button" onClick={(event) => changeName(event)} >
                     <FaEdit />
                 </button>
             </div>
             <div className="board-info">
             {/* where the settlements, cities, and resource info is going to go, each player has their own array of "Build" objects that we add (or remove eventually) from */}
-                <Build />
+                {buildingComponents}
             </div>
         </div>
     )
