@@ -1,5 +1,6 @@
 import React from "react"
 import { FaEdit } from "react-icons/fa";
+import Build from "./Build";
 
 export default function Player(props) {
     const [type, setType] = React.useState(true)
@@ -52,8 +53,8 @@ export default function Player(props) {
                 </button>
             </div>
             <div className="board-info">
-            {/* where the settlements, cities, and resource info is going to go */}
-                <p>add settlements and cities</p>
+            {/* where the settlements, cities, and resource info is going to go, each player has their own array of "Build" objects that we add (or remove eventually) from */}
+                <Build />
             </div>
         </div>
     )

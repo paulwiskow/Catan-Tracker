@@ -70,7 +70,7 @@
 .player-object {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
   justify-items: center;
 }
 
@@ -83,4 +83,28 @@
   border-radius: .5em;
   background-color: #7a7e7a8f;
   margin-left: 10%;
+}
+
+.build-container {
+  display: flex;
+  flex-direction: row;
+  width: 75%;
+}
+
+.build-instruction {
+  width: 150%;
+  margin-right: .25em;
+  text-align: center;
+}
+
+.add-button {
+  width: 50%;
+  height: 50%;
+  background-color: #dee7de8f;
+}
+
+.add-button:active {
+  width: 50%;
+  height: 50%;
+  background-color: #6f746f8f;
 }
