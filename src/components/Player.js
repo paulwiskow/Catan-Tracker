@@ -4,15 +4,24 @@ import { FaEdit } from "react-icons/fa";
 export default function Player(props) {
     const [type, setType] = React.useState(true)
     const [value, setValue] = React.useState(props.name)
-    function click() {
+    const inputRef = React.useRef(null)
+
+    function click(event) {
         setType(oldType => !oldType)
         if (!type) {
             props.nameChange(value, props.num)
+        } else {
+            inputRef.current.focus()
         }
     }
 
     function inputChange(event) {
         setValue(oldValue => event.target.value)
+    }
+
+    const styles = {
+        cursor: type ? "default" : "text",
+        backgroundColor: type ? "#5b5e5b34" : "#7a7e7a8f"
     }
 
     return (
@@ -22,8 +31,8 @@ export default function Player(props) {
             */}
             <div className="player-info">
             {/* color and optional player name */}
-                <input type="text" className="name-input" placeholder={props.name} readOnly={type} onChange={(event) => inputChange(event)} />
-                <button className="name-button" onClick={() => click()} >
+                <input type="text" style={styles} className="name-input" placeholder={props.name} readOnly={type} onChange={(event) => inputChange(event)} ref={inputRef} />
+                <button className="name-button" onClick={(event) => click(event)} >
                     <FaEdit />
                 </button>
             </div>
