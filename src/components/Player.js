@@ -19,6 +19,12 @@ export default function Player(props) {
         setValue(oldValue => event.target.value)
     }
 
+    function handleEnter(event) {
+        if (event.key === "Enter") {
+            click(event)
+        }
+    }
+
     const styles = {
         cursor: type ? "default" : "text",
         backgroundColor: type ? "#5b5e5b34" : "#7a7e7a8f"
@@ -31,7 +37,16 @@ export default function Player(props) {
             */}
             <div className="player-info">
             {/* color and optional player name */}
-                <input type="text" style={styles} className="name-input" placeholder={props.name} readOnly={type} onChange={(event) => inputChange(event)} ref={inputRef} />
+                <input 
+                    type="text" 
+                    style={styles} 
+                    className="name-input" 
+                    placeholder={props.name} 
+                    readOnly={type} 
+                    onChange={(event) => inputChange(event)} 
+                    ref={inputRef} 
+                    onKeyDown={(event) => handleEnter(event)}
+                />
                 <button className="name-button" onClick={(event) => click(event)} >
                     <FaEdit />
                 </button>
