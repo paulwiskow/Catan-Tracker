@@ -5,17 +5,29 @@ import DieButton from "./components/DieButton"
 import Player from "./components/Player"
 
 function App() {
-  const [player1, setPlayer1] = react.useState({})
+  const [players, setPlayers] = react.useState([createPlayer(1), createPlayer(2), createPlayer(3), createPlayer(4)])
 
   function createPlayer(num) {
     return ({
       playerNum: num,
-      name: "",
+      name: `Player ${num}`,
       resourcesGained: [0, 0, 0, 0, 0], // [wood, brick, sheep, wheat, ore]
       resourcesBlocked: [0, 0, 0, 0, 0], // same format as gained, will use this later
       buildings: [{}, {}, {}, {}, {}],  // Building object, can upgrade into city, keeps track of resources and numbers
     })
   }
+
+  function changeName(newName, num) {
+    setPlayers(oldPlayers => oldPlayers.map(player => {
+      if (player.playerNum === num) {
+        return { ...player, name: newName}
+      }
+
+      return player
+    }))
+  }
+
+  const playerComponents = players.map((player) => <Player num={player.num} name={player.name} nameChange={changeName} />)
 
   const [tracker, setTracker] = react.useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -34,8 +46,7 @@ function App() {
           }
         }
         return newArr
-      }
-    )
+    })
   }
 
   const dieElements = numbers.map(num => (
@@ -46,8 +57,7 @@ function App() {
     <main>
       <h1>The best catan irl tracker out there I swear</h1>
       <div className="player-container">
-        <Player />
-        <Player />
+        {playerComponents}
       </div>
       <div className="die-container">
         {dieElements}
