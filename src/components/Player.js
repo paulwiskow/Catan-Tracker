@@ -5,7 +5,7 @@ import Build from "./Build";
 export default function Player(props) {
     const [type, setType] = React.useState(true)
     const [value, setValue] = React.useState(props.name)
-    const [buildings, setBuildings] = React.useState([{}]) // create two unique states for buildings that are in sync with one another, one here and one in parent
+    const [buildings, setBuildings] = React.useState([{}]) // create two unique states for buildings that are in sync with one another, one here and one in parent - so we can render the buildings here and still have the data in the parent so we can possibly make a graph later
     const inputRef = React.useRef(null)
 
     function createNewBuilding() {
@@ -30,7 +30,7 @@ export default function Player(props) {
     }
 
     const buildingComponents = buildings.map(building => {
-        return <Build create={createNewBuilding} />
+        return <Build object={building} create={createNewBuilding}  />
     })
 
     function changeName(event) {

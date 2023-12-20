@@ -108,3 +108,7 @@
   height: 50%;
   background-color: #6f746f8f;
 }
+
+ul {
+  list-style: none;
+}
