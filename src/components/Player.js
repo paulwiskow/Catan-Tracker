@@ -30,7 +30,7 @@ export default function Player(props) {
     }
 
     const buildingComponents = buildings.map(building => {
-        return <Build object={building} create={createNewBuilding}  />
+        return <Build object={building} create={createNewBuilding} />
     })
 
     function changeName(event) {

@@ -111,4 +111,19 @@
 
 ul {
   list-style: none;
+  display: grid;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1.75em;
+  padding-right: .5em;
+}
+
+.dropdown-menu {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #83868351;
+  border-style: none;
+  border-radius: 2em;
 }
