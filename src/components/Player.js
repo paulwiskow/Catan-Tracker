@@ -24,7 +24,6 @@ export default function Player(props) {
         let tempArr = Array.from(buildings)
         tempArr[tempArr.length - 1] = newBuilding
         tempArr.push({})
-        console.log(tempArr)
 
         setBuildings(tempArr)
         props.stateChange(props.num, props.resGained, props.resBlocked, tempArr)
