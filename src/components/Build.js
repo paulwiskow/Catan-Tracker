@@ -35,15 +35,15 @@ export default function Build(props) {
             {add && (props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><RiBuilding3Fill /></IconContext.Provider>)}
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} />}
+                {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
             </div>
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} />}
+                {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
             </div>
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} />}
+                {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
             </div>
         </div>
     )
@@ -64,6 +64,14 @@ function DropdownItems(props) {
         setDice(die)
         setResourcePicked(false)
         props.dropHandler(props.num)
+
+        let newBuilding = {
+            index: props.object.index,
+            isCity: props.object.isCity,
+            diceRoll: props.object.diceRoll,
+        }
+        newBuilding.diceRoll[resource] = die
+        props.update(newBuilding)
     }
 
     return (
@@ -83,7 +91,7 @@ function DropdownItems(props) {
             {resourcePicked && 
             <ul>
                 <li>
-                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(1)}>1</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(2)}>2</button>
+                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(2)}>2</button>
                 </li>
                 <li>
                     <button className="number-buttons left-buttons" onClick={() => chooseRoll(3)}>3</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(4)}>4</button>

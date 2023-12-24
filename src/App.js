@@ -5,7 +5,17 @@ import DieButton from "./components/DieButton"
 import Player from "./components/Player"
 
 function App() {
-  const [players, setPlayers] = react.useState([createPlayer(1), createPlayer(2), createPlayer(3), createPlayer(4)])
+  const [players, setPlayers] = react.useState(() => createPlayerArray())
+
+  function createPlayerArray() {
+    const temp = []
+    for(let i = 0; i < 4; i++) {
+      temp.push(createPlayer(i+1))
+      console.log(temp[i].playerNum)
+    }
+
+    return temp
+  }
 
   function createPlayer(num) {
     return ({
@@ -20,34 +30,38 @@ function App() {
   function handlePlayerState(num, newResGained, newResBlocked, newBuildings) {
     setPlayers(oldPlayers => oldPlayers.map(player => {
       if (player.playerNum === num) {
-        console.log("working")
-        return { ...player, resourcesGained: newResGained, resourcesBlocked: newResBlocked, buildings: newBuildings}
+        return Object.assign(player, {resourcesGained: newResGained, resourcesBlocked: newResBlocked, buildings: newBuildings})
       }
 
+      
       return player
     }))
+
+    console.log(players)
   }
 
   function changeName(newName, num) {
     setPlayers(oldPlayers => oldPlayers.map(player => {
       if (player.playerNum === num) {
-        return { ...player, name: newName}
+        return Object.assign(player, {name: newName})
       }
 
       return player
     }))
   }
 
-  const playerComponents = players.map((player) => <Player 
-                                                      resGained={player.resourcesGained} 
-                                                      resBlocked={player.resourcesBlocked} 
-                                                      buildings={player.buildings} 
-                                                      num={player.num} 
-                                                      name={player.name}  
-                                                      nameChange={changeName} 
-                                                      stateChange={handlePlayerState}
-                                                    />
-    )
+  const playerComponents = players.map((player) => {
+      return <Player 
+              resGained={player.resourcesGained} 
+              resBlocked={player.resourcesBlocked} 
+              buildings={player.buildings} 
+              num={player.playerNum} 
+              name={player.name}  
+              nameChange={(newName, num) => changeName(newName, num)} 
+              stateChange={(num, newResGained, newResBlocked, newBuildings) => handlePlayerState(num, newResGained, newResBlocked, newBuildings)}
+             />
+    }
+  )
 
   const [tracker, setTracker] = react.useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
   const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

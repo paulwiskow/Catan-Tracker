@@ -17,20 +17,34 @@ export default function Player(props) {
         diceMap["ore"] = -1
 
         let newBuilding = {
-            index: props.buildings.length,
+            index: props.buildings.length - 1,
             isCity: false,
             diceRoll: diceMap,
         }
         let tempArr = Array.from(buildings)
         tempArr[tempArr.length - 1] = newBuilding
         tempArr.push({})
+        console.log(tempArr)
 
         setBuildings(tempArr)
         props.stateChange(props.num, props.resGained, props.resBlocked, tempArr)
     }
 
+    function updateBuilding(building) {
+        setBuildings(oldArr => {
+            let temp = Array.from(oldArr)
+            temp[building.index] = building
+
+            return temp
+        })
+
+        console.log(buildings)
+
+        props.stateChange(props.num, props.resGained, props.resBlocked, buildings)
+    }
+
     const buildingComponents = buildings.map(building => {
-        return <Build object={building} create={createNewBuilding} />
+        return <Build object={building} create={() => createNewBuilding()} update={(building) => updateBuilding(building)} />
     })
 
     function changeName(event) {
