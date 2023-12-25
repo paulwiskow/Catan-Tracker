@@ -11,7 +11,6 @@ function App() {
     const temp = []
     for(let i = 0; i < 4; i++) {
       temp.push(createPlayer(i+1))
-      console.log(temp[i].playerNum)
     }
 
     return temp
@@ -23,7 +22,7 @@ function App() {
       name: `Player ${num}`,
       resourcesGained: [0, 0, 0, 0, 0], // [wood, brick, sheep, wheat, ore]
       resourcesBlocked: [0, 0, 0, 0, 0], // same format as gained, will use this later
-      buildings: [{}],  // Building objects, can upgrade into city, keeps track of resources and numbers
+      buildings: [null],  // Building objects, can upgrade into city, keeps track of resources and numbers
     })
   }
 
@@ -36,8 +35,6 @@ function App() {
       
       return player
     }))
-
-    console.log(players)
   }
 
   function changeName(newName, num) {
@@ -73,14 +70,63 @@ function App() {
           if (i === num - 1) {
             if (newArr[i] > 0 && !increase){
               newArr[i] -= 1
+              trackResources(num, false)
             } else if (increase) {
               newArr[i] += 1
+              trackResources(num, true)
             }
+            console.log("being called twice")
             break
           }
         }
         return newArr
     })
+  }
+
+  function trackResources(dieNum, increment) {
+      for (const player of players) {
+          for (const building of player.buildings) {
+              if (building === null) {
+                  break
+              } else {
+                  for (let resource in building.diceRoll) {
+                      if (building.diceRoll[resource] === dieNum) {
+                          if (building.isCity) {
+                              if (increment) {
+                                  player.resourcesGained[convertResourceToIndex(resource)] += 2
+                              } else {
+                                  player.resourcesGained[convertResourceToIndex(resource)] -= 2
+                              }
+                              
+                          } else {
+                            if (increment) {
+                                player.resourcesGained[convertResourceToIndex(resource)] += 1
+                            } else {
+                                player.resourcesGained[convertResourceToIndex(resource)] -= 1
+                            }
+                          }
+                          handlePlayerState(player.num, player.resGained, player.resBlocked, player.buildings)
+                      }
+                  }
+              }
+          }
+
+          // console.log(player)
+      }
+  }
+
+  function convertResourceToIndex(resource) {
+    if (resource === "wood") {
+        return 0
+    } else if (resource === "brick") {
+        return 1
+    } else if (resource === "sheep") {
+        return 2
+    } else if (resource === "wheat") {
+        return 3
+    } else {
+        return 4
+    }
   }
 
   const dieElements = numbers.map(num => (

@@ -94,12 +94,15 @@
 .build-instruction {
   width: 150%;
   margin-right: .25em;
-  text-align: center;
+  text-align: left;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  grid-row-start: 1;
 }
 
 .add-button {
-  width: 50%;
-  height: 50%;
+  width: 75%;
+  height: 75%;
   background-color: #dee7de8f;
 }
 
@@ -107,6 +110,9 @@
   width: 50%;
   height: 50%;
   background-color: #6f746f8f;
+  grid-column-start: 4;
+  grid-column-end: 5;
+  grid-row-start: 1;
 }
 
 ul {
@@ -131,9 +137,23 @@ ul {
 .house-icon {
   width: 2.5em;
   height: 2.5em;
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+
+.house-icon:active {
+  background-color: #83868351;
 }
 
 .resource-icon {
   width: 2.5em;
   height: 2.5em;
+}
+
+.build-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  align-items: center;
+  padding-left: .5em;
 }
