@@ -75,7 +75,6 @@ function App() {
               newArr[i] += 1
               trackResources(num, true)
             }
-            console.log("being called twice")
             break
           }
         }
@@ -111,7 +110,7 @@ function App() {
               }
           }
 
-          // console.log(player)
+          console.log(player)
       }
   }
 
