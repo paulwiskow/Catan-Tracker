@@ -60,14 +60,14 @@ function App() {
     }
   )
 
-  const [tracker, setTracker] = react.useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-  const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  const [tracker, setTracker] = react.useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  const numbers = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
   function changeDieValue(num, increase) {
     setTracker(oldTracker => {
       let newArr = Array.from(oldTracker)
         for(let i = 0; i < oldTracker.length; i++) {
-          if (i === num - 1) {
+          if (i === num - 2) {
             if (newArr[i] > 0 && !increase){
               newArr[i] -= 1
               trackResources(num, false)
@@ -129,7 +129,7 @@ function App() {
   }
 
   const dieElements = numbers.map(num => (
-    <DieButton key={nanoid()} value={num} track={tracker[num-1]} increase={() => changeDieValue(num, true)} decrease={() => changeDieValue(num, false)} />
+    <DieButton key={nanoid()} value={num} track={tracker[num-2]} increase={() => changeDieValue(num, true)} decrease={() => changeDieValue(num, false)} />
   ))
 
   return (

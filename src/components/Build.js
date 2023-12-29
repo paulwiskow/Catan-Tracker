@@ -15,6 +15,10 @@ export default function Build(props) {
     const [style2, setStyle2] = react.useState({ backgroundColor: "#dabf6c" })
     const [style3, setStyle3] = react.useState({ backgroundColor: "#dabf6c" })
 
+    const [die1, setDie1] = react.useState("")
+    const [die2, setDie2] = react.useState("")
+    const [die3, setDie3] = react.useState("")
+
     const woodColor = "#3ecd21"
     const brickColor = "#ce866d"
     const sheepColor = "#9fe21b"
@@ -40,13 +44,16 @@ export default function Build(props) {
         }
     }
 
-    function changeHexColor(building, num, resource) {
+    function changeHexColor(building, num, resource, die) {
         if (num === 1) {
             setStyle1(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
+            setDie1(`${die}`)
         } else if (num === 2) {
             setStyle2(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
+            setDie2(`${die}`)
         } else {
             setStyle3(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
+            setDie3(`${die}`)
         }
 
         props.update(building)
@@ -75,15 +82,18 @@ export default function Build(props) {
             {add && (props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><RiBuilding3Fill onClick={() => toggleCity()} /></IconContext.Provider>)}
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style1} onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource) => changeHexColor(building, 1, resource)} />}
+                {add && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
+                {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
             </div>
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource) => changeHexColor(building, 2, resource)} />}
+                {add && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
+                {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
             </div>
             <div className="resource-container">
                 {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource) => changeHexColor(building, 3, resource)} />}
+                {add && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
+                {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 3, resource, die)} />}
             </div>
         </div>
     )
@@ -109,7 +119,7 @@ function DropdownItems(props) {
             diceRoll: props.object.diceRoll,
         }
         newBuilding.diceRoll[resource] = die
-        props.update(newBuilding, resource)
+        props.update(newBuilding, resource, die)
     }
 
     return (

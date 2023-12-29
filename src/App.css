@@ -2,6 +2,7 @@
   display: grid;
   grid-template: auto auto / repeat(6, 1fr);
   margin: auto;
+  margin-top: 5em;
   width: 50%;
 }
 
@@ -21,8 +22,8 @@
   grid-column-end: 4;
   grid-row-start: 1;
   z-index: 1;
-  -webkit-user-select: none; /* Safari */
-  -ms-user-select: none; /* IE 10 and IE 11 */
+  -webkit-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   outline: 0;
 }
@@ -126,6 +127,7 @@ ul {
 
 .dropdown-menu {
   position: absolute;
+  margin-top: 12em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,6 +150,17 @@ ul {
 .resource-icon {
   width: 2.5em;
   height: 2.5em;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 1;
+  z-index: 1;
+}
+
+.resource-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  place-items: center;
 }
 
 .build-container {
@@ -155,5 +168,16 @@ ul {
   grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr;
   align-items: center;
-  padding-left: .5em;
+  margin: auto;
+  padding-right: 1em;
+}
+
+.show-die {
+  z-index: 5;
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 1;
+  place-self: center;
+  text-align: center;
+  user-select: none;
 }
