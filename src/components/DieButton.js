@@ -1,11 +1,9 @@
-import React from "react"
+import '../style/dice.css'
 
 export default function DieButton(props) {
     return (
-        <div className="die-button">
-            <div className="minus-button" onClick={() => props.decrease()}></div>
-            <h2 className="die-value">{props.value} ({props.track})</h2>
-            <div className="plus-button" onClick={() => props.increase()}></div>
+        <div className="die-button-container">
+            <button className="die-button" onClick={() => props.increase(props.value, true)}>{props.value} ({props.track})</button>
         </div>
     )
 }

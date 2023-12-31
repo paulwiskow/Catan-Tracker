@@ -1,6 +1,7 @@
 import react from "react"
 import { nanoid } from 'nanoid'
-import './App.css'
+import './style/App.css'
+import './style/dice.css'
 import DieButton from "./components/DieButton"
 import Player from "./components/Player"
 
@@ -49,6 +50,7 @@ function App() {
 
   const playerComponents = players.map((player) => {
       return <Player 
+              key={ nanoid() }
               resGained={player.resourcesGained} 
               resBlocked={player.resourcesBlocked} 
               buildings={player.buildings} 
@@ -129,17 +131,16 @@ function App() {
   }
 
   const dieElements = numbers.map(num => (
-    <DieButton key={nanoid()} value={num} track={tracker[num-2]} increase={() => changeDieValue(num, true)} decrease={() => changeDieValue(num, false)} />
+    <DieButton key={nanoid()} value={num} track={tracker[num-2]} increase={() => changeDieValue(num, true)} />
   ))
 
   return (
     <main>
-      <h1>The best catan irl tracker out there I swear</h1>
-      <div className="player-container">
-        {playerComponents}
-      </div>
+      <h1>IRL Catan Tracker</h1>
+      {playerComponents}
       <div className="die-container">
         {dieElements}
+        <button className="undo-button">Undo</button>
       </div>
     </main>
   );

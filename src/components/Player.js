@@ -1,6 +1,7 @@
 import React from "react"
 import { FaEdit } from "react-icons/fa";
 import Build from "./Build";
+import '../style/player.css'
 
 export default function Player(props) {
     const [type, setType] = React.useState(true)
@@ -23,7 +24,10 @@ export default function Player(props) {
         }
         let tempArr = Array.from(buildings)
         tempArr[tempArr.length - 1] = newBuilding
-        tempArr.push(null)
+        if (tempArr.length !== 9) {
+            tempArr.push(null)
+        }
+        
 
         setBuildings(tempArr)
         props.stateChange(props.num, props.resGained, props.resBlocked, tempArr)

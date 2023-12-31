@@ -4,6 +4,8 @@ import { PiHouseSimpleFill } from "react-icons/pi"; // settlement icon - EVENTUA
 import { RiBuilding3Fill } from "react-icons/ri"; // city icon
 import { MdOutlineHexagon } from "react-icons/md"; // resource hex
 import { IconContext } from "react-icons";
+import '../style/player.css'
+import '../style/dropdown.css'
 
 export default function Build(props) {
     const [add, setAdd] = react.useState(false)

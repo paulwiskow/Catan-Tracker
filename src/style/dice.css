@@ -1,0 +1,26 @@
+.die-container {
+    grid-column-start: 3;
+    grid-column-end: 4;
+    grid-row-start: 2;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr;
+    margin: auto;
+    place-items: center;
+    width: 50%;
+}
+  
+.die-button-container {
+    height: auto;
+    text-align: center;
+}
+
+.die-button {
+    width: 5em;
+}
+
+.undo-button {
+    width: 5em;
+    text-align: center;
+}
