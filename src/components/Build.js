@@ -8,7 +8,6 @@ import '../style/player.css'
 import '../style/dropdown.css'
 
 export default function Build(props) {
-    const [add, setAdd] = react.useState(false)
     const [resource1, setResource1] = react.useState(false)
     const [resource2, setResource2] = react.useState(false)
     const [resource3, setResource3] = react.useState(false)
@@ -28,7 +27,6 @@ export default function Build(props) {
     const oreColor = "#a2c9bc"
 
     function addSettle() {
-        setAdd(oldAdd => !oldAdd)
         props.create()
     }
 
@@ -77,24 +75,24 @@ export default function Build(props) {
 
     return (
         <div className="build-container">
-            {!add && <p className="build-instruction">Add settlements here</p>}
-            {!add && <IconContext.Provider value={{ className: "add-button" }}><CiSquarePlus onClick={() => addSettle()} /></IconContext.Provider>}
+            {!props.object && <p className="build-instruction">Add settlements here</p>}
+            {!props.object && <IconContext.Provider value={{ className: "add-button" }}><CiSquarePlus onClick={() => addSettle()} /></IconContext.Provider>}
 
-            {add && (!props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><PiHouseSimpleFill onClick={() => toggleCity()} /></IconContext.Provider>)}
-            {add && (props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><RiBuilding3Fill onClick={() => toggleCity()} /></IconContext.Provider>)}
+            {props.object && (!props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><PiHouseSimpleFill onClick={() => toggleCity()} /></IconContext.Provider>)}
+            {props.object && (props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><RiBuilding3Fill onClick={() => toggleCity()} /></IconContext.Provider>)}
             <div className="resource-container">
-                {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style1} onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {add && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
+                {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style1} onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
+                {props.object && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
                 {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
             </div>
             <div className="resource-container">
-                {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {add && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
+                {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
+                {props.object && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
                 {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
             </div>
             <div className="resource-container">
-                {add && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
-                {add && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
+                {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
+                {props.object && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
                 {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 3, resource, die)} />}
             </div>
         </div>

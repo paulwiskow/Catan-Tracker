@@ -34,16 +34,16 @@
 .add-button {
     width: 75%;
     height: 75%;
+    grid-column-start: 4;
+    grid-column-end: 5;
+    grid-row-start: 1;
     background-color: #dee7de8f;
 }
   
 .add-button:active {
-    width: 50%;
-    height: 50%;
+    width: 70%;
+    height: 70%;
     background-color: #6f746f8f;
-    grid-column-start: 4;
-    grid-column-end: 5;
-    grid-row-start: 1;
 }
 
 .house-icon {

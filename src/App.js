@@ -27,13 +27,12 @@ function App() {
     })
   }
 
-  function handlePlayerState(num, newResGained, newResBlocked, newBuildings) {
+  function handlePlayerState(num, newBuildings) {
     setPlayers(oldPlayers => oldPlayers.map(player => {
       if (player.playerNum === num) {
-        return Object.assign(player, {resourcesGained: newResGained, resourcesBlocked: newResBlocked, buildings: newBuildings})
+        return Object.assign(player, {buildings: newBuildings})
       }
 
-      
       return player
     }))
   }
@@ -46,18 +45,19 @@ function App() {
 
       return player
     }))
+
+    console.log(players)
   }
 
   const playerComponents = players.map((player) => {
+      // console.log("success")
       return <Player 
               key={ nanoid() }
-              resGained={player.resourcesGained} 
-              resBlocked={player.resourcesBlocked} 
               buildings={player.buildings} 
               num={player.playerNum} 
               name={player.name}  
               nameChange={(newName, num) => changeName(newName, num)} 
-              stateChange={(num, newResGained, newResBlocked, newBuildings) => handlePlayerState(num, newResGained, newResBlocked, newBuildings)}
+              stateChange={(num, newBuildings) => handlePlayerState(num, newBuildings)}
              />
     }
   )

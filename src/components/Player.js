@@ -22,15 +22,14 @@ export default function Player(props) {
             isCity: false,
             diceRoll: diceMap,
         }
-        let tempArr = Array.from(buildings)
+        let tempArr = Array.from(props.buildings)
         tempArr[tempArr.length - 1] = newBuilding
         if (tempArr.length !== 9) {
             tempArr.push(null)
         }
         
-
-        setBuildings(tempArr)
-        props.stateChange(props.num, props.resGained, props.resBlocked, tempArr)
+        // setBuildings(tempArr)
+        props.stateChange(props.num, tempArr)
     }
 
     function updateBuilding(building) {
@@ -41,10 +40,13 @@ export default function Player(props) {
             return temp
         })
 
-        props.stateChange(props.num, props.resGained, props.resBlocked, buildings)
+        props.stateChange(props.num, buildings)
     }
 
-    const buildingComponents = buildings.map(building => {
+    const buildingComponents = props.buildings.map(building => {
+        console.log(props.num)
+        console.log(building)
+        console.log(props.buildings)
         return <Build object={building} create={() => createNewBuilding()} update={(building) => updateBuilding(building)} />
     })
 
