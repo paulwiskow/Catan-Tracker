@@ -9,6 +9,7 @@ ul {
   
   .dropdown-menu {
     position: absolute;
+    z-index: 1000;
     margin-top: 12em;
     display: flex;
     align-items: center;

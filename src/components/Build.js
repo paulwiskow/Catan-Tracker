@@ -1,4 +1,5 @@
 import react from "react"
+import { createPortal } from 'react-dom';
 import { CiSquarePlus } from "react-icons/ci";
 import { PiHouseSimpleFill } from "react-icons/pi"; // settlement icon - EVENTUALLY add colors and actual colored icons, can get images from https://github.com/riteshsp2000/cards-tracker-catan/blob/master/src/img/cards/card_wool.svg
 import { RiBuilding3Fill } from "react-icons/ri"; // city icon
@@ -80,16 +81,19 @@ export default function Build(props) {
 
             {props.object && (!props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><PiHouseSimpleFill onClick={() => toggleCity()} /></IconContext.Provider>)}
             {props.object && (props.object.isCity && <IconContext.Provider value={{ className: "house-icon"}}><RiBuilding3Fill onClick={() => toggleCity()} /></IconContext.Provider>)}
+
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style1} onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
             </div>
+
             {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
             </div>
             {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
+
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
@@ -104,10 +108,18 @@ function DropdownItems(props) {
     const [resourcePicked, setResourcePicked] = react.useState(false)
     const [resource, setResource] = react.useState(null)
 
+    // basically put a very bad bandaid on the dropdown menu problem
+    let percentage = 0;
+    if (props.num === 1) {
+        percentage = 4;
+    } else if (props.num === 2) {
+        percentage = 10;
+    } else {
+        percentage = 17;
+    }
+
     const style = {
-        gridColumnStart: `${props.num + 1}`,
-        gridColumnEnd: `${props.num + 2}`,
-        gridRowStart: "1"
+        marginLeft: `${percentage}%`
     }
 
     function chooseResource(resource) {  // currently will only update after choosing roll, can't just choose resource
