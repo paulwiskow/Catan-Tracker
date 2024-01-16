@@ -6,7 +6,6 @@ import '../style/player.css'
 export default function Player(props) {
     const [type, setType] = React.useState(true)
     const [value, setValue] = React.useState(props.name)
-    const [buildings, setBuildings] = React.useState([{}]) // create two unique states for buildings that are in sync with one another, one here and one in parent - so we can render the buildings here and still have the data in the parent so we can possibly make a graph later
     const inputRef = React.useRef(null)
 
     function createNewBuilding() {
@@ -28,19 +27,14 @@ export default function Player(props) {
             tempArr.push(null)
         }
         
-        // setBuildings(tempArr)
         props.stateChange(props.num, tempArr)
     }
 
     function updateBuilding(building) {
-        setBuildings(oldArr => {
-            let temp = Array.from(oldArr)
-            temp[building.index] = building
+        let temp = Array.from(props.buildings)
+        temp[building.index] = building
 
-            return temp
-        })
-
-        props.stateChange(props.num, buildings)
+        props.stateChange(props.num, temp)
     }
 
     const buildingComponents = props.buildings.map(building => {

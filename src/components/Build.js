@@ -83,18 +83,18 @@ export default function Build(props) {
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style1} onClick={() => {setResource1(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
-                {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
             </div>
+            {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
-                {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
             </div>
+            {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
-                {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 3, resource, die)} />}
             </div>
+            {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 3, resource, die)} />}
         </div>
     )
 }
@@ -103,6 +103,12 @@ function DropdownItems(props) {
     // Have it so that after choosing resource, chooses dice roll
     const [resourcePicked, setResourcePicked] = react.useState(false)
     const [resource, setResource] = react.useState(null)
+
+    const style = {
+        gridColumnStart: `${props.num + 1}`,
+        gridColumnEnd: `${props.num + 2}`,
+        gridRowStart: "1"
+    }
 
     function chooseResource(resource) {  // currently will only update after choosing roll, can't just choose resource
         setResourcePicked(true)
@@ -123,7 +129,7 @@ function DropdownItems(props) {
     }
 
     return (
-        <div className="dropdown-menu">
+        <div className="dropdown-menu" style={style}>
             {!resourcePicked && 
             <ul>
                 <li>
