@@ -1,5 +1,4 @@
 import react from "react"
-import { createPortal } from 'react-dom';
 import { CiSquarePlus } from "react-icons/ci";
 import { PiHouseSimpleFill } from "react-icons/pi"; // settlement icon - EVENTUALLY add colors and actual colored icons, can get images from https://github.com/riteshsp2000/cards-tracker-catan/blob/master/src/img/cards/card_wool.svg
 import { RiBuilding3Fill } from "react-icons/ri"; // city icon
@@ -9,6 +8,8 @@ import '../style/player.css'
 import '../style/dropdown.css'
 
 export default function Build(props) {
+    const [tempBuilding, setTempBuilding] = react.useState({})
+
     const [resource1, setResource1] = react.useState(false)
     const [resource2, setResource2] = react.useState(false)
     const [resource3, setResource3] = react.useState(false)
@@ -20,6 +21,11 @@ export default function Build(props) {
     const [die1, setDie1] = react.useState("")
     const [die2, setDie2] = react.useState("")
     const [die3, setDie3] = react.useState("")
+
+    react.useEffect(() => {
+        console.log("Build rerendered")
+        // props.update(tempBuilding)
+    }, [tempBuilding]);
 
     const woodColor = "#3ecd21"
     const brickColor = "#ce866d"
@@ -57,10 +63,11 @@ export default function Build(props) {
             setDie3(`${die}`)
         }
 
-        props.update(building)
+        setTempBuilding(building)
     }
 
     function chooseResource(resource) {
+        console.log(resource)
         if (resource === "wood") {
             return woodColor
         } else if (resource === "brick") {
@@ -137,6 +144,7 @@ function DropdownItems(props) {
             diceRoll: props.object.diceRoll,
         }
         newBuilding.diceRoll[resource] = die
+        console.log(newBuilding)
         props.update(newBuilding, resource, die)
     }
 

@@ -45,8 +45,6 @@ function App() {
 
       return player
     }))
-
-    console.log(players)
   }
 
   const playerComponents = players.map((player) => {

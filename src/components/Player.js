@@ -8,6 +8,10 @@ export default function Player(props) {
     const [value, setValue] = React.useState(props.name)
     const inputRef = React.useRef(null)
 
+    React.useEffect(() => {
+        console.log("Player rerendered");
+    });
+
     function createNewBuilding() {
         const diceMap = new Map()
         diceMap["wood"] = -1 // dice roll
@@ -31,16 +35,17 @@ export default function Player(props) {
     }
 
     function updateBuilding(building) {
-        let temp = Array.from(props.buildings)
-        temp[building.index] = building
+        // let temp = Array.from(props.buildings)
+        // temp[building.index] = building
+        props.buildings[building.index] = building
 
-        props.stateChange(props.num, temp)
+        props.stateChange(props.num, props.buildings)
     }
 
     const buildingComponents = props.buildings.map(building => {
-        console.log(props.num)
-        console.log(building)
-        console.log(props.buildings)
+        // console.log(props.num)
+        // console.log(building)
+        // console.log(props.buildings)
         return <Build object={building} create={() => createNewBuilding()} update={(building) => updateBuilding(building)} />
     })
 
@@ -90,7 +95,7 @@ export default function Player(props) {
                 </button>
             </div>
             <div className="board-info">
-            {/* where the settlements, cities, and resource info is going to go, each player has their own array of "Build" objects that we add (or remove eventually) from */}
+            {/* where the settlements, cities, and resource info is going to go */}
                 {buildingComponents}
             </div>
         </div>
