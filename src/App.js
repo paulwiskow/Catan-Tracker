@@ -4,6 +4,7 @@ import './style/App.css'
 import './style/dice.css'
 import DieButton from "./components/DieButton"
 import Player from "./components/Player"
+import Build from "./components/Build"
 
 function App() {
   const [players, setPlayers] = react.useState(() => createPlayerArray())
@@ -37,6 +38,34 @@ function App() {
     }))
   }
 
+  function createNewBuilding(playerIndex) {
+    const diceMap = new Map()
+    diceMap["wood"] = -1 // dice roll
+    diceMap["brick"] = -1
+    diceMap["sheep"] = -1
+    diceMap["wheat"] = -1
+    diceMap["ore"] = -1
+
+    let newBuilding = {
+        index: players[playerIndex].buildings.length - 1,
+        isCity: false,
+        diceRoll: diceMap,
+    }
+    let tempArr = Array.from(players[playerIndex].buildings)
+    tempArr[tempArr.length - 1] = newBuilding
+    if (tempArr.length !== 9) {
+        tempArr.push(null)
+    }
+    
+    handlePlayerState(playerIndex + 1, tempArr)
+  }
+
+  function updateBuilding(building, playerIndex) {
+    let tempArr = Array.from(players[playerIndex].buildings)
+    tempArr[building.index] = building
+    handlePlayerState(playerIndex + 1, tempArr)
+  }
+
   function changeName(newName, num) {
     setPlayers(oldPlayers => oldPlayers.map(player => {
       if (player.playerNum === num) {
@@ -49,13 +78,16 @@ function App() {
 
   const playerComponents = players.map((player) => {
       // console.log("success")
+      const index = player.playerNum - 1
+      const buildingComponents = player.buildings.map(building => {
+        return <Build object={building} create={() => createNewBuilding(index)} update={(localBuild) => updateBuilding(localBuild, index)} />})
+  
       return <Player 
               key={ nanoid() }
-              buildings={player.buildings} 
+              buildings={buildingComponents} 
               num={player.playerNum} 
               name={player.name}  
               nameChange={(newName, num) => changeName(newName, num)} 
-              stateChange={(num, newBuildings) => handlePlayerState(num, newBuildings)}
              />
     }
   )

@@ -12,43 +12,6 @@ export default function Player(props) {
         console.log("Player rerendered");
     });
 
-    function createNewBuilding() {
-        const diceMap = new Map()
-        diceMap["wood"] = -1 // dice roll
-        diceMap["brick"] = -1
-        diceMap["sheep"] = -1
-        diceMap["wheat"] = -1
-        diceMap["ore"] = -1
-
-        let newBuilding = {
-            index: props.buildings.length - 1,
-            isCity: false,
-            diceRoll: diceMap,
-        }
-        let tempArr = Array.from(props.buildings)
-        tempArr[tempArr.length - 1] = newBuilding
-        if (tempArr.length !== 9) {
-            tempArr.push(null)
-        }
-        
-        props.stateChange(props.num, tempArr)
-    }
-
-    function updateBuilding(building) {
-        // let temp = Array.from(props.buildings)
-        // temp[building.index] = building
-        props.buildings[building.index] = building
-
-        props.stateChange(props.num, props.buildings)
-    }
-
-    const buildingComponents = props.buildings.map(building => {
-        // console.log(props.num)
-        // console.log(building)
-        // console.log(props.buildings)
-        return <Build object={building} create={() => createNewBuilding()} update={(building) => updateBuilding(building)} />
-    })
-
     function changeName(event) {
         setType(oldType => !oldType)
         if (!type) {
@@ -96,7 +59,7 @@ export default function Player(props) {
             </div>
             <div className="board-info">
             {/* where the settlements, cities, and resource info is going to go */}
-                {buildingComponents}
+                {props.buildings}
             </div>
         </div>
     )

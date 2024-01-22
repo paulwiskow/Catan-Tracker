@@ -8,8 +8,6 @@ import '../style/player.css'
 import '../style/dropdown.css'
 
 export default function Build(props) {
-    const [tempBuilding, setTempBuilding] = react.useState({})
-
     const [resource1, setResource1] = react.useState(false)
     const [resource2, setResource2] = react.useState(false)
     const [resource3, setResource3] = react.useState(false)
@@ -22,10 +20,11 @@ export default function Build(props) {
     const [die2, setDie2] = react.useState("")
     const [die3, setDie3] = react.useState("")
 
+    const [arg, setArg] = react.useState()
+
     react.useEffect(() => {
         console.log("Build rerendered")
-        // props.update(tempBuilding)
-    }, [tempBuilding]);
+    });
 
     const woodColor = "#3ecd21"
     const brickColor = "#ce866d"
@@ -34,6 +33,7 @@ export default function Build(props) {
     const oreColor = "#a2c9bc"
 
     function addSettle() {
+        setArg(oldArg => oldArg + 1)
         props.create()
     }
 
@@ -63,7 +63,7 @@ export default function Build(props) {
             setDie3(`${die}`)
         }
 
-        setTempBuilding(building)
+        // props.update(building)
     }
 
     function chooseResource(resource) {
@@ -83,6 +83,7 @@ export default function Build(props) {
 
     return (
         <div className="build-container">
+            {`${arg}`}
             {!props.object && <p className="build-instruction">Add settlements here</p>}
             {!props.object && <IconContext.Provider value={{ className: "add-button" }}><CiSquarePlus onClick={() => addSettle()} /></IconContext.Provider>}
 
