@@ -8,25 +8,17 @@ import '../style/player.css'
 import '../style/dropdown.css'
 
 export default function Build(props) {
-    const [resource1, setResource1] = react.useState(false)
+    const [resource1, setResource1] = react.useState(false) // for dropdown menu
     const [resource2, setResource2] = react.useState(false)
     const [resource3, setResource3] = react.useState(false)
 
-    const [style1, setStyle1] = react.useState({ backgroundColor: "#dabf6c" })
-    const [style2, setStyle2] = react.useState({ backgroundColor: "#dabf6c" })
-    const [style3, setStyle3] = react.useState({ backgroundColor: "#dabf6c" })
+    const style1 = { backgroundColor: props.object ? chooseResource(props.object.tiles[0].resource) : "#dabf6c" } 
+    const style2 = { backgroundColor: props.object ? chooseResource(props.object.tiles[1].resource) : "#dabf6c" } 
+    const style3 = { backgroundColor: props.object ? chooseResource(props.object.tiles[2].resource) : "#dabf6c" } 
 
-    const [die1, setDie1] = react.useState("")
-    const [die2, setDie2] = react.useState("")
-    const [die3, setDie3] = react.useState("")
-
-    const [arg, setArg] = react.useState(0)
-
-    const woodColor = "#3ecd21"
-    const brickColor = "#ce866d"
-    const sheepColor = "#9fe21b"
-    const wheatColor = "#e8b339"
-    const oreColor = "#a2c9bc"
+    const die1 = props.object && props.object.tiles[0].diceRoll !== -1 ? props.object.tiles[0].diceRoll : ""
+    const die2 = props.object && props.object.tiles[1].diceRoll !== -1 ? props.object.tiles[1].diceRoll : ""
+    const die3 = props.object && props.object.tiles[2].diceRoll !== -1 ? props.object.tiles[2].diceRoll : "" 
 
     function addSettle() {
         props.create()
@@ -46,39 +38,24 @@ export default function Build(props) {
         }
     }
 
-    function changeHexColor(building, num, resource, die) {
-        if (num === 1) {
-            setStyle1(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
-            setDie1(`${die}`)
-        } else if (num === 2) {
-            setStyle2(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
-            setDie2(`${die}`)
-        } else {
-            setStyle3(oldStyle => Object.assign(oldStyle, {backgroundColor: chooseResource(resource)}))
-            setDie3(`${die}`)
-        }
-
-        setArg(oldArg => oldArg + 1)
-        // props.update(building)
-    }
-
     function chooseResource(resource) {
         if (resource === "wood") {
-            return woodColor
+            return "#3ecd21"
         } else if (resource === "brick") {
-            return brickColor
+            return "#ce866d"
         } else if (resource === "sheep") {
-            return sheepColor
+            return "#9fe21b"
         } else if (resource === "wheat") {
-            return wheatColor
+            return "#e8b339"
+        } else if (resource === "desert") {
+            return "#dabf6c"
         } else {
-            return oreColor
+            return "#a2c9bc"
         }
     }
 
     return (
         <div className="build-container">
-            {`${arg}`}
             {!props.object && <p className="build-instruction">Add settlements here</p>}
             {!props.object && <IconContext.Provider value={{ className: "add-button" }}><CiSquarePlus onClick={() => addSettle()} /></IconContext.Provider>}
 
@@ -90,18 +67,18 @@ export default function Build(props) {
                 {props.object && <p className="show-die" onClick={() => {setResource1(oldResource => !oldResource)}}>{die1}</p>}
             </div>
 
-            {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 1, resource, die)} />}
+            {resource1 && <DropdownItems object={props.object} num={1} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style2} onClick={() => {setResource2(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource2(oldResource => !oldResource)}}>{die2}</p>}
             </div>
-            {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 2, resource, die)} />}
+            {resource2 && <DropdownItems object={props.object} num={2} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
 
             <div className="resource-container">
                 {props.object && <IconContext.Provider value={{ className: "resource-icon"}}><MdOutlineHexagon style={style3} onClick={() => {setResource3(oldResource => !oldResource)}}/></IconContext.Provider>}
                 {props.object && <p className="show-die" onClick={() => {setResource3(oldResource => !oldResource)}}>{die3}</p>}
             </div>
-            {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building, resource, die) => changeHexColor(building, 3, resource, die)} />}
+            {resource3 && <DropdownItems object={props.object} num={3} dropHandler={(num) => dropdownHandler(num)} update={(building) => props.update(building)} />}
         </div>
     )
 }
@@ -137,11 +114,11 @@ function DropdownItems(props) {
         let newBuilding = {
             index: props.object.index,
             isCity: props.object.isCity,
-            diceRoll: props.object.diceRoll,
+            tiles: props.object.tiles,
         }
-        newBuilding.diceRoll[resource] = die
-        console.log(newBuilding)
-        props.update(newBuilding, resource, die)
+        newBuilding.tiles[props.num - 1].resource = resource
+        newBuilding.tiles[props.num - 1].diceRoll = die
+        props.update(newBuilding)
     }
 
     return (
@@ -161,16 +138,13 @@ function DropdownItems(props) {
             {resourcePicked && 
             <ul>
                 <li>
-                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(2)}>2</button>
+                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(2)}>2</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(3)}>3</button>
                 </li>
                 <li>
-                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(3)}>3</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(4)}>4</button>
+                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(4)}>4</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(5)}>5</button>
                 </li>
                 <li>
-                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(5)}>5</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(6)}>6</button>
-                </li>
-                <li>
-                    <button className="number-buttons left-buttons" onClick={() => chooseRoll(7)}>7</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(8)}>8</button>
+                     <button className="number-buttons left-buttons" onClick={() => chooseRoll(6)}>6</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(8)}>8</button>
                 </li>
                 <li>
                     <button className="number-buttons left-buttons" onClick={() => chooseRoll(9)}>9</button> <button className="number-buttons right-buttons" onClick={() => chooseRoll(10)}>10</button>

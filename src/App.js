@@ -39,27 +39,28 @@ function App() {
   }
 
   function createNewBuilding(playerIndex) {
-    const diceMap = new Map()
-    diceMap["wood"] = -1 // dice roll
-    diceMap["brick"] = -1
-    diceMap["sheep"] = -1
-    diceMap["wheat"] = -1
-    diceMap["ore"] = -1
+    const tileArray = [createNewTile(0), createNewTile(1), createNewTile(2)]
 
     let newBuilding = {
         index: players[playerIndex].buildings.length - 1,
         isCity: false,
-        diceRoll: diceMap,
+        tiles: tileArray,
     }
     let tempArr = Array.from(players[playerIndex].buildings)
     tempArr[tempArr.length - 1] = newBuilding
     if (tempArr.length !== 9) {
         tempArr.push(null)
     }
-
-    console.log(tempArr)
     
     handlePlayerState(playerIndex + 1, tempArr)
+  }
+
+  function createNewTile(index) {
+    return {
+      resource: "desert",
+      diceRoll: -1,
+      index: index,
+    }
   }
 
   function updateBuilding(building, playerIndex) {
@@ -122,23 +123,23 @@ function App() {
               if (building === null) {
                   break
               } else {
-                  for (let resource in building.diceRoll) {
-                      if (building.diceRoll[resource] === dieNum) {
+                  for (let tile in building.tiles) {
+                      if (tile.diceRoll === dieNum) {
                           if (building.isCity) {
                               if (increment) {
-                                  player.resourcesGained[convertResourceToIndex(resource)] += 2
+                                  player.resourcesGained[convertResourceToIndex(tile.resource)] += 2
                               } else {
-                                  player.resourcesGained[convertResourceToIndex(resource)] -= 2
+                                  player.resourcesGained[convertResourceToIndex(tile.resource)] -= 2
                               }
                               
                           } else {
                             if (increment) {
-                                player.resourcesGained[convertResourceToIndex(resource)] += 1
+                                player.resourcesGained[convertResourceToIndex(tile.resource)] += 1
                             } else {
-                                player.resourcesGained[convertResourceToIndex(resource)] -= 1
+                                player.resourcesGained[convertResourceToIndex(tile.resource)] -= 1
                             }
                           }
-                          handlePlayerState(player.num, player.resGained, player.resBlocked, player.buildings)
+                          handlePlayerState(player.num, player.resGained, player.resBlocked, player.buildings) // create different function for updating all this
                       }
                   }
               }

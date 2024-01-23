@@ -1,6 +1,5 @@
 import React from "react"
 import { FaEdit } from "react-icons/fa";
-import Build from "./Build";
 import '../style/player.css'
 
 export default function Player(props) {
