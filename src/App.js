@@ -31,7 +31,7 @@ function App() {
   function handlePlayerState(num, newBuildings) {
     setPlayers(oldPlayers => oldPlayers.map(player => {
       if (player.playerNum === num) {
-        return Object.assign(player, {buildings: newBuildings})
+        return {...player, buildings: newBuildings}
       }
 
       return player
@@ -56,6 +56,8 @@ function App() {
     if (tempArr.length !== 9) {
         tempArr.push(null)
     }
+
+    console.log(tempArr)
     
     handlePlayerState(playerIndex + 1, tempArr)
   }

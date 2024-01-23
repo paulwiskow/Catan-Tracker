@@ -20,11 +20,7 @@ export default function Build(props) {
     const [die2, setDie2] = react.useState("")
     const [die3, setDie3] = react.useState("")
 
-    const [arg, setArg] = react.useState()
-
-    react.useEffect(() => {
-        console.log("Build rerendered")
-    });
+    const [arg, setArg] = react.useState(0)
 
     const woodColor = "#3ecd21"
     const brickColor = "#ce866d"
@@ -33,7 +29,6 @@ export default function Build(props) {
     const oreColor = "#a2c9bc"
 
     function addSettle() {
-        setArg(oldArg => oldArg + 1)
         props.create()
     }
 
@@ -63,11 +58,11 @@ export default function Build(props) {
             setDie3(`${die}`)
         }
 
+        setArg(oldArg => oldArg + 1)
         // props.update(building)
     }
 
     function chooseResource(resource) {
-        console.log(resource)
         if (resource === "wood") {
             return woodColor
         } else if (resource === "brick") {

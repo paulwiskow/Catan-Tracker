@@ -8,10 +8,6 @@ export default function Player(props) {
     const [value, setValue] = React.useState(props.name)
     const inputRef = React.useRef(null)
 
-    React.useEffect(() => {
-        console.log("Player rerendered");
-    });
-
     function changeName(event) {
         setType(oldType => !oldType)
         if (!type) {
