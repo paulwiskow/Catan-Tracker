@@ -51,6 +51,18 @@ function App() {
     );
   }
 
+  function updateResourcesGain(num, newResGained) {
+	setPlayers((oldPlayers) =>
+      oldPlayers.map((player) => {
+        if (player.playerNum === num) {
+          return { ...player, resourcesGained: newResGained };
+        }
+
+        return player;
+      })
+    );
+  }
+
   function createNewBuilding(playerIndex) {
     const tileArray = [createNewTile(0), createNewTile(1), createNewTile(2)];
 
@@ -123,15 +135,29 @@ function App() {
   ]);
   const numbers = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const dieData = formDiceData();
+  const playerResourceData = formPlayerData() // formatted as [wood, brick, sheep, wheat, ore]
+  const playerNames = players.map((player) => player.name)
+
+  function formPlayerData() {
+	let temp = [[], [], [], [], []]
+
+	for(const element of players) {
+		for(let j = 0; j < 5; j++) {
+			temp[j].push({ player: element.num, resource: element.resourcesGained[j] })
+		}
+	}
+
+	console.log(temp)
+
+	return temp
+  }
 
   function formDiceData() {
-    let temp = [];
+    let temp = [0, 0]; // Need this for formatting the chart
 
     for (let i = 0; i < numbers.length; i++) {
       temp.push({ number: numbers[i], frequency: tracker[i] });
     }
-
-	console.log(temp)
 
     return temp;
   }
@@ -184,12 +210,9 @@ function App() {
                   ] -= 1;
                 }
               }
-              handlePlayerState(
-                player.num,
-                player.resGained,
-                player.resBlocked,
-                player.buildings
-              ); // create different function for updating all this IMPORTANT ***********
+
+			  console.log(player)
+              updateResourcesGain(player.num, player.resourcesGained) // create different function for updating all this IMPORTANT ***********
             }
           }
         }
@@ -253,7 +276,6 @@ function App() {
 			<div className="die-chart-container">
 				<VictoryChart domain={{ x: [2, 12] }} domainPadding={{ x: 20}}>
 					<VictoryAxis 
-						tickValues={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]} 
 						tickFormat={numbers} 
 						label="Die" 
 						style={{
@@ -274,7 +296,34 @@ function App() {
 				</VictoryChart>
 			</div>
 			<div className="player-resource-chart-container">
-
+				<VictoryChart>
+					<VictoryAxis 
+						tickValues={[1, 2, 3, 4]} 
+						tickFormat={playerNames} 
+						label="Player Names" 
+						style={{
+							axisLabel: {fontSize: 15, padding: 20},
+							tickLabels: {fontSize: 10, padding: 5}
+						}}
+					/> 
+					<VictoryAxis 
+						dependentAxis 
+						tickFormat={(x) => `${x}`} 
+						label="Resources Gained" 
+						style={{
+							axisLabel: {fontSize: 15, padding: 20},
+							tickLabels: {fontSize: 10, padding: 5}
+						}}
+					/>
+					<VictoryStack>
+						<VictoryBar data={playerResourceData[0]} x="Player" y="Resources Gained" />
+						<VictoryBar data={playerResourceData[1]} x="Player" y="Resources Gained" />
+						<VictoryBar data={playerResourceData[2]} x="Player" y="Resources Gained" />
+						<VictoryBar data={playerResourceData[3]} x="Player" y="Resources Gained" />
+						<VictoryBar data={playerResourceData[4]} x="Player" y="Resources Gained" />
+					</VictoryStack>
+					
+				</VictoryChart>
 			</div>
 		</div>}
     </main>
