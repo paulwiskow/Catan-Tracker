@@ -1,7 +1,26 @@
-main {
+.player-edit-container {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: .2fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.toggle-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  /* background-color: grey; */
+  width: 15%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1em;
+}
+
+.toggle-page-button {
+  display: inline-block;
+  font-size: 2em;
+  text-align: center;
+  margin: 0;
+  user-select: none;
 }
 
 h1 {

@@ -1,5 +1,6 @@
 import react from "react"
 import { nanoid } from 'nanoid'
+import { VictoryBar, VictoryChart, VictoryAxis, VictoryTheme, VictoryStack } from 'victory'
 import './style/App.css'
 import './style/dice.css'
 import DieButton from "./components/DieButton"
@@ -8,6 +9,10 @@ import Build from "./components/Build"
 
 function App() {
   const [players, setPlayers] = react.useState(() => createPlayerArray())
+  const [toggle, setToggle] = react.useState(true)
+
+  const style_main = toggle ? { backgroundColor: "#6f746f8f"} : {}
+  const style_graph = !toggle ? { backgroundColor: "#6f746f8f"} : {}
 
   function createPlayerArray() {
     const temp = []
@@ -144,8 +149,6 @@ function App() {
                   }
               }
           }
-
-          console.log(player)
       }
   }
 
@@ -170,10 +173,20 @@ function App() {
   return (
     <main>
       <h1>IRL Catan Tracker</h1>
-      {playerComponents}
-      <div className="die-container">
-        {dieElements}
-        <button className="undo-button">Undo</button>
+      <div className="toggle-container">
+        <p className="toggle-page-button" style={style_main} onClick={() => setToggle(true)}>toggle1</p>
+        <p className="toggle-page-button" style={style_graph} onClick={() => setToggle(false)}>toggle2</p>
+      </div>
+      {toggle && <div className="player-edit-container">
+        {playerComponents}
+        <div className="die-container">
+          {dieElements}
+          <button className="undo-button">Undo</button>
+        </div>
+      </div>}
+
+      <div className="graph-container">
+
       </div>
     </main>
   );
