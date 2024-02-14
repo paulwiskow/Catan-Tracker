@@ -12,11 +12,11 @@ import "./style/dice.css";
 import DieButton from "./components/DieButton";
 import Player from "./components/Player";
 import Build from "./components/Build";
+import { keyboard } from "@testing-library/user-event/dist/keyboard";
 
 function App() {
   const [players, setPlayers] = react.useState(() => createPlayerArray());
   const [toggle, setToggle] = react.useState(true);
-  console.log(players)
 
   const style_main = toggle ? { backgroundColor: "#6f746f8f" } : {};
   const style_graph = !toggle ? { backgroundColor: "#6f746f8f" } : {};
@@ -55,7 +55,7 @@ function App() {
   function updateResourcesGain(num, newResGained) {
 	setPlayers((oldPlayers) =>
 	  oldPlayers.map((player) => {
-		setResourceMax(oldMax => Math.max(oldMax, player.resourcesGained.reduce((partialSum, a) => partialSum + a, 0)))
+		setResourceMax(oldMax => Math.max(oldMax, player.resourcesGained.reduce((partialSum, a) => partialSum + a, 0)+2))
 
 		if (player.playerNum === num) {
 		  return { ...player, resourcesGained: newResGained };
@@ -139,7 +139,6 @@ function App() {
   const dieData = formDiceData();
   const [dieHistory, setDieHistory] = react.useState([])
   const displayableDieHistory = dieHistory.map(num => `${num} `)
-  console.log(displayableDieHistory)
   const playerResourceData = formPlayerData() // formatted as [wood, brick, sheep, wheat, ore]
   const playerNames = players.map((player) => player.name)
   const [resourceMax, setResourceMax] = react.useState(1)
@@ -258,6 +257,51 @@ function App() {
 	/>
   ));
 
+  function exportJsonData() {
+	const jsonObject = {
+		players: players,
+		dieTracker: tracker,
+		dieHistory: dieHistory
+	}
+
+	const fileData = JSON.stringify(jsonObject);
+	const blob = new Blob([fileData], { type: "text/plain" });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.download = "game-data.json";
+	link.href = url;
+	link.click();
+  }
+
+  function importJsonData() {
+	const input = document.createElement('input');
+	input.type = 'file';
+
+	input.onchange = e => { 
+		// getting a hold of the file reference
+		const file = e.target.files[0]; 
+
+		// setting up the reader
+		const reader = new FileReader();
+		reader.readAsText(file,'UTF-8');
+
+		// here we tell the reader what to do when it's done reading...
+		reader.onload = readerEvent => {
+			const content = readerEvent.target.result; // this is the content!
+			const jsonObject = JSON.parse(content)
+			setPlayers(jsonObject.players)
+			setDieHistory(jsonObject.dieHistory)
+			setTracker(jsonObject.dieTracker)
+
+			// Set y-max for resource graph with the new data
+			setResourceMax(Math.max(jsonObject.players[0].resourcesGained.reduce((partialSum, a) => partialSum + a, 0)+2, jsonObject.players[1].resourcesGained.reduce((partialSum, a) => partialSum + a, 0)+2, jsonObject.players[2].resourcesGained.reduce((partialSum, a) => partialSum + a, 0)+2, jsonObject.players[3].resourcesGained.reduce((partialSum, a) => partialSum + a, 0)+2))
+		}
+
+	}
+
+	input.click();
+  }
+
   return (
 	<main>
 		<h1>IRL Catan Tracker</h1>
@@ -284,7 +328,7 @@ function App() {
 					{dieElements}
 					<button className="undo-button" onClick={() => changeDieValue(dieHistory.length > 0 ? dieHistory[dieHistory.length - 1]: null, false)}>Undo</button>
 				</div>
-				{displayableDieHistory}
+				{displayableDieHistory.reverse()}
 			</div>
 		)}
 
@@ -386,6 +430,11 @@ function App() {
 				</VictoryChart>
 			</div>
 		</div>}
+
+		<div className="save-import-buttons">
+			<button onClick={() => exportJsonData()}>Export Game Data</button>
+			<button onClick={() => importJsonData()}>Import Game Data</button>
+		</div>
 	</main>
   );
 }

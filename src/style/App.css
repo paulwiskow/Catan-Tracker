@@ -35,3 +35,12 @@ h1 {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
 }
+
+.save-import-buttons {
+  display: grid;
+  place-items: center;
+  width: 25%;
+  margin: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
