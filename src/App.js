@@ -137,6 +137,9 @@ function App() {
   ]);
   const numbers = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
   const dieData = formDiceData();
+  const [dieHistory, setDieHistory] = react.useState([])
+  const displayableDieHistory = dieHistory.map(num => `${num} `)
+  console.log(displayableDieHistory)
   const playerResourceData = formPlayerData() // formatted as [wood, brick, sheep, wheat, ore]
   const playerNames = players.map((player) => player.name)
   const [resourceMax, setResourceMax] = react.useState(1)
@@ -164,22 +167,34 @@ function App() {
   }
 
   function changeDieValue(num, increase) {
-	setTracker((oldTracker) => {
-	  let newArr = Array.from(oldTracker);
-	  for (let i = 0; i < oldTracker.length; i++) {
-		if (i === num - 2) {
-		  if (newArr[i] > 0 && !increase) {
-			newArr[i] -= 1;
-			trackResources(num, false);
-		  } else if (increase) {
-			newArr[i] += 1;
-			trackResources(num, true);
-		  }
-		  break;
-		}
-	  }
-	  return newArr;
-	});
+	if (num !== null) {
+		setTracker((oldTracker) => {
+			let newArr = Array.from(oldTracker);
+			for (let i = 0; i < oldTracker.length; i++) {
+				if (i === num - 2) {
+					if (newArr[i] > 0 && !increase) {
+						newArr[i] -= 1;
+						setDieHistory(oldHistory => {
+							let temp = Array.from(oldHistory)
+							temp.pop()
+							return temp
+						})
+						trackResources(num, false);
+					} else if (increase) {
+						newArr[i] += 1;
+						setDieHistory(oldHistory => {
+							let temp = Array.from(oldHistory)
+							temp.push(num)
+							return temp
+						})
+						trackResources(num, true);
+					}
+					break;
+				}
+			}
+			return newArr;
+		});
+	}
   }
 
   function trackResources(dieNum, increment) {
@@ -248,38 +263,39 @@ function App() {
 		<h1>IRL Catan Tracker</h1>
 		<div className="toggle-container">
 			<p
-			className="toggle-page-button"
-			style={style_main}
-			onClick={() => setToggle(true)}
+				className="toggle-page-button"
+				style={style_main}
+				onClick={() => setToggle(true)}
 			>
 			Players
 			</p>
 			<p
-			className="toggle-page-button"
-			style={style_graph}
-			onClick={() => setToggle(false)}
+				className="toggle-page-button"
+				style={style_graph}
+				onClick={() => setToggle(false)}
 			>
 			Graphs
 			</p>
 		</div>
 		{toggle && (
 			<div className="player-edit-container">
-			{playerComponents}
-			<div className="die-container">
-				{dieElements}
-				<button className="undo-button">Undo</button>
-			</div>
+				{playerComponents}
+				<div className="die-container">
+					{dieElements}
+					<button className="undo-button" onClick={() => changeDieValue(dieHistory.length > 0 ? dieHistory[dieHistory.length - 1]: null, false)}>Undo</button>
+				</div>
+				{displayableDieHistory}
 			</div>
 		)}
 
 		{!toggle && <div className="graph-container">
 			<div className="die-chart-container">
-				<VictoryChart domain={{ x: [2, 12], y:[0, Math.max(...tracker)+1] }} domainPadding={{ x: 20}}>
+				<VictoryChart domain={{ x: [2, 12], y:[0, Math.max(...tracker)+1] }} domainPadding={{ x: 30}}>
 					<VictoryAxis 
 						tickFormat={numbers} 
 						label="Die" 
 						style={{
-							axisLabel: {fontSize: 15, padding: 20},
+							axisLabel: {fontSize: 15, padding: 25},
 							tickLabels: {fontSize: 10, padding: 5}
 						}}
 					/> 
@@ -288,7 +304,7 @@ function App() {
 						tickFormat={(x) => `${x}`} 
 						label="Frequency" 
 						style={{
-							axisLabel: {fontSize: 15, padding: 20},
+							axisLabel: {fontSize: 15, padding: 30},
 							tickLabels: {fontSize: 10, padding: 5}
 						}}
 					/>
@@ -302,7 +318,7 @@ function App() {
 						tickFormat={playerNames} 
 						label="Player Names" 
 						style={{
-							axisLabel: {fontSize: 15, padding: 20},
+							axisLabel: {fontSize: 15, padding: 25},
 							tickLabels: {fontSize: 10, padding: 5}
 						}}
 					/> 
@@ -311,7 +327,7 @@ function App() {
 						tickFormat={(x) => `${x}`} 
 						label="Resources Gained" 
 						style={{
-							axisLabel: {fontSize: 15, padding: 20},
+							axisLabel: {fontSize: 15, padding: 30},
 							tickLabels: {fontSize: 10, padding: 5}
 						}}
 					/>
