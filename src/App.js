@@ -323,12 +323,14 @@ function App() {
 		</div>
 		{toggle && (
 			<div className="player-edit-container">
-				{playerComponents}
+				<div className="players-column">
+					{playerComponents}
+					{displayableDieHistory.reverse()}
+				</div>
 				<div className="die-container">
 					{dieElements}
 					<button className="undo-button" onClick={() => changeDieValue(dieHistory.length > 0 ? dieHistory[dieHistory.length - 1]: null, false)}>Undo</button>
 				</div>
-				{displayableDieHistory.reverse()}
 			</div>
 		)}
 
