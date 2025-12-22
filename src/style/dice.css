@@ -3,9 +3,6 @@
     display: flex;
     align-items: flex-start; /* don’t stretch columns to same height */
     gap: 16px;
-    /* remove earlier absolute sidebar approach */
-    /* position: relative;
-    padding-right: clamp(240px, 28vw, 360px); */
 }
 
 /* 2) Players live in their own responsive grid in the left column */
