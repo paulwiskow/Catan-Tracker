@@ -1,0 +1,46 @@
+.player-edit-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.toggle-container {
+  display: grid;
+  place-items: center;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  width: 25%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1em;
+}
+
+.toggle-page-button {
+  display: inline-block;
+  font-size: 2em;
+  text-align: center;
+  margin: 0;
+  user-select: none;
+}
+
+h1 {
+  text-align: center;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  grid-row-start: 1;
+}
+
+.graph-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.save-import-buttons {
+  display: grid;
+  place-items: center;
+  width: 25%;
+  margin: auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
