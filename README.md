@@ -1,8 +1,59 @@
-# Catan-Tracker
-After cloning this repository, do `npm start` in the terminal to launch the site.
-The site allows you to add settlements and add what tiles your building are on. Clicking on the building icon will upgrade it into a city and clicking on the tiles will prompt what resource it is and what die number it has.
-The second tab has the die frequency graph and the resource stats for the players.
-There is no local or server-side saving of the game, but the site allows you to export a game file to save on your local device and you can import that file to continue where you left off.
-The site will not keep track of any victory points, development cards, or stolen/blocked cards.  It also has no in-built error tracking, so you could add 8 cities for example on the site when you could not in game.
+# Test
 
-This was a small personal project for stats nerds such as myself who wanted to show my friends that my luck was simply better.
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
+
+## Development server
+
+To start a local development server, run:
+
+```bash
+ng serve
+```
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Running unit tests
+
+To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+
+```bash
+ng test
+```
+
+## Running end-to-end tests
+
+For end-to-end (e2e) testing, run:
+
+```bash
+ng e2e
+```
+
+Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+
+## Additional Resources
+
+For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
