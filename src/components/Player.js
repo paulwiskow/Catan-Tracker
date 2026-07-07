@@ -1,34 +1,19 @@
 import React from "react"
-import { FaEdit } from "react-icons/fa";
 import '../style/player.css'
 
 export default function Player(props) {
-    const [type, setType] = React.useState(true)
+    const [isFocused, setIsFocused] = React.useState(false)
     const [value, setValue] = React.useState(props.name)
-    const inputRef = React.useRef(null)
-
-    function changeName(event) {
-        setType(oldType => !oldType)
-        if (!type) {
-            props.nameChange(value, props.num)
-        } else {
-            inputRef.current.focus()
-        }
-    }
 
     function inputChange(event) {
-        setValue(oldValue => event.target.value)
+        setValue(event.target.value)
     }
 
-    function handleEnter(event) {
-        if (event.key === "Enter") {
-            changeName(event)
-        }
-    }
-
-    const styles = {
-        cursor: type ? "default" : "text",
-        backgroundColor: type ? "#5b5e5b34" : "#7a7e7a8f"
+    function handleBlur(event) {
+        const nextValue = event.target.value
+        setValue(nextValue)
+        setIsFocused(false)
+        props.nameChange(nextValue, props.num)
     }
 
     return (
@@ -36,26 +21,27 @@ export default function Player(props) {
             {/* this will be where we can add settlements, cities, etc 
                 have them correspond to numbers for rolls to keep track of resources    
             */}
-            <div className="player-info">
             {/* color and optional player name */}
-                <input 
-                    type="text" 
-                    style={styles} 
-                    className="name-input" 
-                    placeholder={props.name} 
-                    readOnly={type} 
-                    onChange={(event) => inputChange(event)} 
-                    ref={inputRef} 
-                    onKeyDown={(event) => handleEnter(event)}
-                />
-                <button className="name-button" onClick={(event) => changeName(event)} >
-                    <FaEdit />
-                </button>
-            </div>
+            <input
+                type="text"
+                className="name-input"
+                value={value}
+                placeholder={props.name}
+                onChange={inputChange}
+                onFocus={() => setIsFocused(true)}
+                onBlur={handleBlur}
+                style={{
+                    backgroundColor: isFocused ? "#7a7e7a8f" : "#5b5e5b34"
+                }}
+            // onKeyDown={(event) => handleEnter(event)}
+            />
             <div className="board-info">
-            {/* where the settlements, cities, and resource info is going to go */}
+                {/* where the settlements, cities, and resource info is going to go */}
                 {props.buildings}
             </div>
         </div>
+
+
+
     )
 }
