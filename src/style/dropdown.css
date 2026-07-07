@@ -1,20 +1,25 @@
-ul {
-    list-style: none;
-    display: grid;
-    align-items: center;
-    justify-content: center;
-    margin-left: -1.75em;
-    padding-right: .5em;
-  }
-  
-  .dropdown-menu {
-    position: absolute;
-    z-index: 1000;
-    margin-top: 12em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #83868351;
-    border-style: none;
-    border-radius: 2em;
-  }
+.choose-roll-text {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+
+}
+
+.choose-resource-text {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+
+}
+
+.dropdown-menu {
+  position: relative;
+  z-index: 1000;
+  margin-right: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background-color: #83868351; */
+  border-style: none;
+  border-radius: 2em;
+}
