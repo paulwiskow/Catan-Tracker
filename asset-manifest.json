@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Catan-Tracker/static/css/main.bb09564f.css",
+    "main.js": "/Catan-Tracker/static/js/main.9590f82c.js",
+    "static/js/787.1f2d84f9.chunk.js": "/Catan-Tracker/static/js/787.1f2d84f9.chunk.js",
+    "index.html": "/Catan-Tracker/index.html",
+    "main.bb09564f.css.map": "/Catan-Tracker/static/css/main.bb09564f.css.map",
+    "main.9590f82c.js.map": "/Catan-Tracker/static/js/main.9590f82c.js.map",
+    "787.1f2d84f9.chunk.js.map": "/Catan-Tracker/static/js/787.1f2d84f9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.bb09564f.css",
+    "static/js/main.9590f82c.js"
+  ]
+}

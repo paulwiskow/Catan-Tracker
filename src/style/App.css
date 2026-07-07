@@ -1,8 +1,15 @@
-.toggle-button-container {
-  display: flex;
+.player-edit-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.toggle-container {
+  display: grid;
   place-items: center;
-  justify-content: space-evenly;
-  width: 50%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  width: 25%;
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 1em;
@@ -14,8 +21,6 @@
   text-align: center;
   margin: 0;
   user-select: none;
-  padding: 0.1em 0.5em;
-  cursor: pointer;
 }
 
 h1 {
@@ -26,19 +31,9 @@ h1 {
 }
 
 .graph-container {
-  display: flex;
-  flex-direction: row;
-  background-color: #ffffff;
-  justify-content: space-evenly;
-  border: 2px solid black;
-  min-height: 50vh;
-}
-
-@media (max-width: 900px) {
-  .graph-container {
-    display: flex;
-    flex-direction: column;
-  }
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
 }
 
 .save-import-buttons {
@@ -48,20 +43,4 @@ h1 {
   margin: auto;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
-}
-
-
-
-button {
-  cursor: pointer;
-}
-
-.toggle-div {
-  margin-top: 2em;
-  margin-bottom: 2em;
-}
-
-.player-tab {
-  display: flex;
-  justify-content: center;
 }
