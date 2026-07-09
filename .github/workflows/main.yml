@@ -32,6 +32,8 @@ jobs:
         run: npm ci
 
       - name: Build app
+        env:
+          CI: false
         run: npm run build
 
       - name: Publish build folder to gh-pages (clean replace)
