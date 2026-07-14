@@ -2,15 +2,6 @@ import { ElementRef, ViewChild, AfterViewInit, Component, signal, OnDestroy } fr
 import { RouterOutlet } from '@angular/router';
 
 
-type hexagon = {
-    center_x: number;
-    center_y: number;
-    radius: number; // also side length
-    type: string; // desert, wood, brick, wheat, sheep, ore
-    num: number; // die number
-}
-
-
 @Component({
     selector: 'app-root',
     imports: [RouterOutlet],
@@ -23,11 +14,15 @@ export class App implements OnDestroy {
     @ViewChild('my_canvas') canvas_ref!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas_container') container_ref!: ElementRef<HTMLDivElement>;
 
+    public outer_tiles: Hexagon[] = [];
+    public inner_tiles: Hexagon[] = [];
+    public center_tile!: Hexagon;
     private ctx!: CanvasRenderingContext2D;
     private resize_observer!: ResizeObserver;
 
 
     ngAfterViewInit(): void {
+        this.initialize_tiles();
         this.ctx = this.canvas_ref.nativeElement.getContext('2d')!;
 
         this.resize_observer = new ResizeObserver(entries => {
@@ -38,6 +33,18 @@ export class App implements OnDestroy {
         });
 
         this.resize_observer.observe(this.container_ref.nativeElement);
+    }
+
+    private initialize_tiles(): void {
+        for (let i = 0; i < 12; i++) {
+            this.outer_tiles.push(new Hexagon(0, 0, 0, "desert", -1));
+        }
+
+        for (let i = 0; i < 6; i++) {
+            this.inner_tiles.push(new Hexagon(0, 0, 0, "desert", -1));
+        }
+
+        this.center_tile = new Hexagon(0, 0, 0, "desert", -1);
     }
 
     private resize_canvas(width: number, height: number): void {
@@ -59,19 +66,16 @@ export class App implements OnDestroy {
         let outer_starting_angle: number = 0; // in degrees
         let dist_30: number = 3 * radius;
         let dist_60: number = 2 * radius * Math.sqrt(3);
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < this.outer_tiles.length; i++) {
             let radians: number = outer_starting_angle * (Math.PI / 180);
 
-            let temp_hex: hexagon = {
-                center_x: outer_starting_angle % 60 == 0 ? center_x + dist_60 * Math.cos(radians) : center_x + dist_30 * Math.cos(radians),
-                center_y: outer_starting_angle % 60 == 0 ? center_y + dist_60 * Math.sin(radians) : center_y + dist_30 * Math.sin(radians),
-                radius: radius,
-                type: i == 0 ? "wood" : "ore",
-                num: radius,
-            }
+            this.outer_tiles[i].center_x = outer_starting_angle % 60 == 0 ? center_x + dist_60 * Math.cos(radians) : center_x + dist_30 * Math.cos(radians);
+            this.outer_tiles[i].center_y = outer_starting_angle % 60 == 0 ? center_y + dist_60 * Math.sin(radians) : center_y + dist_30 * Math.sin(radians);
+            this.outer_tiles[i].radius = radius;
+            this.outer_tiles[i].type = i == 0 ? "wood" : "ore";
+            this.outer_tiles[i].num = radius;
 
-            this.draw_hexagon(temp_hex);
-
+            this.outer_tiles[i].draw_hexagon(this.ctx);
             outer_starting_angle -= 30;
             outer_starting_angle = outer_starting_angle % 360;
         }
@@ -79,52 +83,76 @@ export class App implements OnDestroy {
 
         outer_starting_angle = 0;
         dist_60 = dist_60 / 2;
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < this.inner_tiles.length; i++) {
             let radians: number = outer_starting_angle * (Math.PI / 180);
-            let temp_hex: hexagon = {
-                center_x: center_x + dist_60 * Math.cos(radians),
-                center_y: center_y + dist_60 * Math.sin(radians),
-                radius: radius,
-                type: i == 0 ? "brick" : "wheat",
-                num: -1,
-            }
-            this.draw_hexagon(temp_hex);
+            this.inner_tiles[i].center_x = center_x + dist_60 * Math.cos(radians);
+            this.inner_tiles[i].center_y = center_y + dist_60 * Math.sin(radians);
+            this.inner_tiles[i].radius = radius;
+            this.inner_tiles[i].type = i == 0 ? "brick" : "wheat";
+            this.inner_tiles[i].num = -1;
 
+            this.inner_tiles[i].draw_hexagon(this.ctx);
             outer_starting_angle -= 60;
             outer_starting_angle = outer_starting_angle % 360;
         }
 
-        this.draw_hexagon({
-            center_x: center_x,
-            center_y: center_y,
-            radius: radius,
-            type: "sheep",
-            num: 0
-        });
+        this.center_tile.center_x = center_x;
+        this.center_tile.center_y = center_y;
+        this.center_tile.radius = radius;
+        this.center_tile.type = "sheep";
+        this.center_tile.num = 0;
+        this.center_tile.draw_hexagon(this.ctx);
     }
 
-    draw_hexagon(hexagon: hexagon): void {
-        this.ctx.lineWidth = hexagon['radius'] / 25;
-        this.ctx.strokeStyle = 'black';
-        this.ctx.beginPath();
-        this.ctx.moveTo(hexagon['center_x'], hexagon['center_y'] - hexagon['radius']);
+
+    ngOnDestroy(): void {
+        if (this.resize_observer) {
+            this.resize_observer.disconnect();
+        }
+    }
+}
+
+class Hexagon {
+    center_x: number;
+    center_y: number;
+    radius: number; // also side length
+    type: string; // desert, wood, brick, wheat, sheep, ore
+    num: number; // die number
+    is_robbed: boolean;
+
+
+    constructor(center_x: number, center_y: number, radius: number, type: string, num: number) {
+        this.center_x = center_x;
+        this.center_y = center_y;
+        this.radius = radius;
+        this.type = type;
+        this.num = num;
+        this.is_robbed = false;
+    }
+
+
+    draw_hexagon(ctx: CanvasRenderingContext2D): void {
+        ctx.lineWidth = this.radius / 25;
+        ctx.strokeStyle = 'black';
+        ctx.beginPath();
+        ctx.moveTo(this.center_x, this.center_y - this.radius);
 
         let angle: number = 30; // In degrees
-        let prev_x: number = hexagon['center_x'];
-        let prev_y: number = hexagon['center_y'] - hexagon['radius'];
+        let prev_x: number = this.center_x;
+        let prev_y: number = this.center_y - this.radius;
         for (let i = 0; i < 6; i++) {
             const radians: number = angle * (Math.PI / 180);
-            const next_x: number = prev_x + hexagon['radius'] * Math.cos(radians);
-            const next_y: number = prev_y + hexagon['radius'] * Math.sin(radians);
+            const next_x: number = prev_x + this.radius * Math.cos(radians);
+            const next_y: number = prev_y + this.radius * Math.sin(radians);
 
-            this.ctx.lineTo(next_x, next_y);
+            ctx.lineTo(next_x, next_y);
             prev_x = next_x;
             prev_y = next_y;
             angle += 60;
         }
 
         let color: string = "";
-        switch (hexagon['type']) {
+        switch (this.type) {
             case "wood":
                 color = "#8c560f";
                 break;
@@ -144,35 +172,29 @@ export class App implements OnDestroy {
                 color = "#dabf6c";
         }
 
-        this.ctx.fillStyle = color;
-        this.ctx.fill();
-        this.ctx.stroke();
-        this.ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
 
 
         // draw number
-        if (hexagon['type'] != 'desert') {
-            this.ctx.beginPath();
-            this.ctx.moveTo(hexagon['center_x'], hexagon['center_y']);
-            this.ctx.arc(hexagon['center_x'], hexagon['center_y'], hexagon['radius'] / 4, 0, 2 * Math.PI);
-            this.ctx.fillStyle = '#dabf6c';
-            this.ctx.fill();
-            this.ctx.closePath();
+        if (this.type != 'desert') {
+            ctx.beginPath();
+            ctx.moveTo(this.center_x, this.center_y);
+            ctx.arc(this.center_x, this.center_y, this.radius / 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#dabf6c';
+            ctx.fill();
+            ctx.closePath();
 
 
-            this.ctx.fillStyle = 'black';
-            this.ctx.font = `bold ${hexagon['radius'] / 6}px Arial`;
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(`${hexagon['num']}`, hexagon['center_x'], hexagon['center_y']);
+            ctx.fillStyle = 'black';
+            ctx.font = `bold ${this.radius / 6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${this.num}`, this.center_x, this.center_y);
         }
     }
 
-    ngOnDestroy(): void {
-        if (this.resize_observer) {
-            this.resize_observer.disconnect();
-        }
-    }
 }
-
 
