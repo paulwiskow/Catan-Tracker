@@ -8,6 +8,42 @@
     <div class="content">
         <div class="board">
             <div #canvas_container class="canvas_container">
+                <!-- Top Left Toolbar -->
+                <div class="canvas_toolbar">
+                    <button [class.active]="active_btn() === 'resource'" (click)="on_resource_btn_click('resource')"
+                        class="tool_btn">Place Resources</button>
+                    <button [class.active]="active_btn() === 'dice'" (click)="on_resource_btn_click('dice')"
+                        class="tool_btn">Place Dice</button>
+                    <button [class.active]="active_btn() === 'settle'" (click)="on_resource_btn_click('settle')"
+                        class="tool_btn">Place Settlements</button>
+                </div>
+
+                <!-- Right Side Options Panel Template -->
+                @if (active_btn() != null) {
+                <div class="options_panel">
+                    <h3>
+                        @if (active_btn() === 'resource') { Resources }
+                        @else if (active_btn() === 'dice') { Dice Numbers }
+                        @else if (active_btn() === 'settle') { Player Colors }
+                    </h3>
+
+                    @if (active_btn() === 'resource') {
+                    <!-- Do [class.active] here eventually for option_btn class -->
+                    <button class="option_btn">Wood</button>
+                    <button class="option_btn">Brick</button>
+                    <button class="option_btn">Wheat</button>
+                    <button class="option_btn">Sheep</button>
+                    <button class="option_btn">Ore</button>
+                    <button class="option_btn">Desert</button>
+                    }
+                    @else if (active_btn() === 'dice') {
+                    <p>dice options</p>
+                    }
+                    @else if (active_btn() === 'settle') {
+                    <p>settle options</p>
+                    }
+                </div>
+                }
                 <canvas #my_canvas></canvas>
             </div>
         </div>

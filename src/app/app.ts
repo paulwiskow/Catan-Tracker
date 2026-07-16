@@ -2,6 +2,24 @@ import { ElementRef, ViewChild, AfterViewInit, Component, signal, OnDestroy } fr
 import { RouterOutlet } from '@angular/router';
 
 
+type settlement = {
+    center_x: number,
+    center_y: number,
+    tile1: Hexagon,
+    tile2: Hexagon,
+    tile3: Hexagon,
+    is_city: boolean,
+}
+
+type player_track = {
+    wood: number,
+    brick: number,
+    wheat: number,
+    sheep: number,
+    ore: number,
+}
+
+
 @Component({
     selector: 'app-root',
     imports: [RouterOutlet],
@@ -19,6 +37,10 @@ export class App implements OnDestroy {
     public center_tile!: Hexagon;
     private ctx!: CanvasRenderingContext2D;
     private resize_observer!: ResizeObserver;
+
+
+    public active_btn = signal<"resource" | "dice" | "settle" | null>(null);
+    public resource_btn = signal<"wood" | "brick" | "wheat" | "sheep" | "ore" | null>(null);
 
 
     ngAfterViewInit(): void {
@@ -54,9 +76,19 @@ export class App implements OnDestroy {
         this.draw_board(width, height);
     }
 
+
+    on_resource_btn_click(btn: "resource" | "dice" | "settle"): void {
+        if (this.active_btn() === btn) {
+            this.active_btn.set(null);
+        } else {
+            this.active_btn.set(btn);
+        }
+    }
+
+
     draw_board(width: number, height: number): void {
-        let center_x: number = width / 2;
-        let center_y: number = height / 2;
+        let center_x: number = width / 2.5;
+        let center_y: number = height / 1.9;
         let radius: number = Math.min(width, height) / 10;
 
         // Angle 0 starts at same place, but goes clockwise instead of counter clockwise
@@ -73,7 +105,7 @@ export class App implements OnDestroy {
             this.outer_tiles[i].center_y = outer_starting_angle % 60 == 0 ? center_y + dist_60 * Math.sin(radians) : center_y + dist_30 * Math.sin(radians);
             this.outer_tiles[i].radius = radius;
             this.outer_tiles[i].type = i == 0 ? "wood" : "ore";
-            this.outer_tiles[i].num = radius;
+            this.outer_tiles[i].num = 0;
 
             this.outer_tiles[i].draw_hexagon(this.ctx);
             outer_starting_angle -= 30;
@@ -111,6 +143,59 @@ export class App implements OnDestroy {
         }
     }
 }
+
+
+class Player {
+    settlements: settlement[];
+    resources_gained: player_track;
+    resources_lost: player_track;
+
+    constructor() {
+        this.settlements = [];
+        this.resources_gained = { "wood": 0, "brick": 0, "wheat": 0, "sheep": 0, "ore": 0 };
+        this.resources_lost = { "wood": 0, "brick": 0, "wheat": 0, "sheep": 0, "ore": 0 };
+    }
+
+
+    add_settlement(center_x: number, center_y: number, tile1: Hexagon, tile2: Hexagon, tile3: Hexagon): void {
+        this.settlements.push({ center_x: center_x, center_y: center_y, tile1: tile1, tile2: tile2, tile3: tile3, is_city: false });
+        // possibly draw settlement here?
+    }
+
+
+    // Have to figure out who's settlement it is when citying
+    // Also have to set a radius for the click radius
+    is_my_settlement(center_x: number, center_y: number): boolean {
+        return false;
+    }
+
+
+    // I think we find out the settlement by coordinate, not by reference
+    city_up(center_x: number, center_y: number): void { }
+
+
+    roll_dice(num: number): void {
+        const update_vals = (i: number, tile: "tile1" | "tile2" | "tile3", roll: number): void => {
+            if (this.settlements[i][tile].type === "desert") return;
+            if (this.settlements[i][tile].num != roll) return;
+
+            if (!this.settlements[i][tile].is_robbed) {
+                this.resources_gained[this.settlements[i][tile].type as keyof player_track] += 1 + Number(this.settlements[i]["is_city"]);
+
+            } else {
+                this.resources_lost[this.settlements[i][tile].type as keyof player_track] += 1 + Number(this.settlements[i]["is_city"]);
+            }
+        };
+
+
+        for (let i = 0; i < this.settlements.length; i++) {
+            update_vals(i, "tile1", num);
+            update_vals(i, "tile2", num);
+            update_vals(i, "tile3", num);
+        }
+    }
+}
+
 
 class Hexagon {
     center_x: number;
