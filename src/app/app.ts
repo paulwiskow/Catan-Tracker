@@ -37,10 +37,13 @@ export class App implements OnDestroy {
     public center_tile!: Hexagon;
     private ctx!: CanvasRenderingContext2D;
     private resize_observer!: ResizeObserver;
+    private height!: number;
+    private width!: number;
 
 
     public active_btn = signal<"resource" | "dice" | "settle" | null>(null);
-    public resource_btn = signal<"wood" | "brick" | "wheat" | "sheep" | "ore" | null>(null);
+    public resource_btn = signal<"wood" | "brick" | "wheat" | "sheep" | "ore" | "desert" | null>(null);
+    public dice_btn = signal<"wrap-around" | null>(null);
 
 
     ngAfterViewInit(): void {
@@ -72,12 +75,14 @@ export class App implements OnDestroy {
     private resize_canvas(width: number, height: number): void {
         this.canvas_ref.nativeElement.width = width;
         this.canvas_ref.nativeElement.height = height;
+        this.height = height;
+        this.width = width;
 
-        this.draw_board(width, height);
+        this.draw_board();
     }
 
 
-    on_resource_btn_click(btn: "resource" | "dice" | "settle"): void {
+    on_active_btn_click(btn: "resource" | "dice" | "settle"): void {
         if (this.active_btn() === btn) {
             this.active_btn.set(null);
         } else {
@@ -86,10 +91,114 @@ export class App implements OnDestroy {
     }
 
 
-    draw_board(width: number, height: number): void {
-        let center_x: number = width / 2.5;
-        let center_y: number = height / 1.9;
-        let radius: number = Math.min(width, height) / 10;
+    on_resource_btn_click(btn: "wood" | "brick" | "wheat" | "sheep" | "ore" | "desert"): void {
+        if (this.resource_btn() === btn) {
+            this.resource_btn.set(null);
+        } else {
+            this.resource_btn.set(btn);
+        }
+    }
+
+
+    on_dice_btn_click(btn: "wrap-around"): void {
+        if (this.dice_btn() === btn) {
+            this.dice_btn.set(null)
+        } else {
+            this.dice_btn.set(btn);
+        }
+    }
+
+
+    on_canvas_click(event: MouseEvent): void {
+        if (this.active_btn() === 'resource' && this.resource_btn() != null) this.select_tile(event);
+        if (this.active_btn() === "dice" && this.dice_btn() === 'wrap-around') this.select_dice_wraparound(event);
+    }
+
+
+    select_dice_wraparound(event: MouseEvent): void {
+        const wrap_nums = [5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11];
+        let nums_idx = 0;
+
+        const coords = this.get_canvas_coords(event);
+        const min_radius = this.center_tile.radius * (Math.sqrt(3) / 2);
+        let starting_idx = -1;
+        for (let i = 0; i < this.outer_tiles.length; i++) {
+            const tile = this.outer_tiles[i];
+            if (this.get_distance(coords['x'], coords['y'], tile.center_x, tile.center_y) <= min_radius) {
+                starting_idx = i;
+                break;
+            }
+        }
+
+        if (starting_idx == -1) return;
+        for (let i = starting_idx; i < this.outer_tiles.length + starting_idx; i++) {
+            const idx = i % this.outer_tiles.length;
+            const tile = this.outer_tiles[idx];
+            if (tile.type === "desert") continue;
+
+            tile.num = wrap_nums[nums_idx];
+            nums_idx += 1;
+        }
+
+        const inner_start = Math.ceil(starting_idx / 2) % this.inner_tiles.length;
+        for (let i = inner_start; i < this.inner_tiles.length + inner_start; i++) {
+            const idx = i % this.inner_tiles.length;
+            const tile = this.inner_tiles[idx];
+            if (tile.type === "desert") continue;
+
+            tile.num = wrap_nums[nums_idx];
+            nums_idx += 1;
+        }
+
+        if (this.center_tile.type === "desert") return;
+        this.center_tile.num = wrap_nums[nums_idx];
+        this.draw_board();
+    }
+
+
+    select_tile(event: MouseEvent): void {
+        const coords = this.get_canvas_coords(event);
+        const tiles = [...this.outer_tiles, ...this.inner_tiles, this.center_tile];
+
+        let selected_hex: Hexagon | null = null;
+        const min_radius = this.center_tile.radius * (Math.sqrt(3) / 2);
+        for (const tile of tiles) {
+            if (this.get_distance(coords['x'], coords['y'], tile.center_x, tile.center_y) <= min_radius) {
+                selected_hex = tile;
+                break;
+            }
+        }
+
+
+        if (selected_hex === null) return;
+        selected_hex.type = this.resource_btn()!;
+        selected_hex.draw_hexagon(this.ctx);
+    }
+
+
+    get_canvas_coords(event: MouseEvent): { x: number, y: number } {
+        const canvas = this.canvas_ref.nativeElement;
+        const rect = canvas.getBoundingClientRect();
+
+        const scale_x = canvas.width / rect.width;
+        const scale_y = canvas.height / rect.height;
+
+        return {
+            x: (event.clientX - rect.left) * scale_x,
+            y: (event.clientY - rect.top) * scale_y
+        };
+    }
+
+
+    get_distance(x1: number, y1: number, x2: number, y2: number): number {
+        return Math.sqrt(Math.pow(y1 - y2, 2) + Math.pow(x1 - x2, 2));
+    }
+
+
+    draw_board(): void {
+        let center_x: number = this.width / 2.5;
+        let center_y: number = this.height / 1.9;
+        let radius: number = Math.min(this.width, this.height) / 10;
 
         // Angle 0 starts at same place, but goes clockwise instead of counter clockwise
         // outer ring is 3 radii from center when angle % 60 != 0 
@@ -104,8 +213,8 @@ export class App implements OnDestroy {
             this.outer_tiles[i].center_x = outer_starting_angle % 60 == 0 ? center_x + dist_60 * Math.cos(radians) : center_x + dist_30 * Math.cos(radians);
             this.outer_tiles[i].center_y = outer_starting_angle % 60 == 0 ? center_y + dist_60 * Math.sin(radians) : center_y + dist_30 * Math.sin(radians);
             this.outer_tiles[i].radius = radius;
-            this.outer_tiles[i].type = i == 0 ? "wood" : "ore";
-            this.outer_tiles[i].num = 0;
+            // this.outer_tiles[i].type = i == 0 ? "wood" : "ore";
+            // this.outer_tiles[i].num = 0;
 
             this.outer_tiles[i].draw_hexagon(this.ctx);
             outer_starting_angle -= 30;
@@ -120,8 +229,8 @@ export class App implements OnDestroy {
             this.inner_tiles[i].center_x = center_x + dist_60 * Math.cos(radians);
             this.inner_tiles[i].center_y = center_y + dist_60 * Math.sin(radians);
             this.inner_tiles[i].radius = radius;
-            this.inner_tiles[i].type = i == 0 ? "brick" : "wheat";
-            this.inner_tiles[i].num = -1;
+            // this.inner_tiles[i].type = i == 0 ? "brick" : "wheat";
+            // this.inner_tiles[i].num = -1;
 
             this.inner_tiles[i].draw_hexagon(this.ctx);
             outer_starting_angle -= 60;
@@ -131,8 +240,8 @@ export class App implements OnDestroy {
         this.center_tile.center_x = center_x;
         this.center_tile.center_y = center_y;
         this.center_tile.radius = radius;
-        this.center_tile.type = "sheep";
-        this.center_tile.num = 0;
+        // this.center_tile.type = "sheep";
+        // this.center_tile.num = 6;
         this.center_tile.draw_hexagon(this.ctx);
     }
 
@@ -273,8 +382,8 @@ class Hexagon {
             ctx.closePath();
 
 
-            ctx.fillStyle = 'black';
-            ctx.font = `bold ${this.radius / 6}px Arial`;
+            ctx.fillStyle = this.num == 6 || this.num == 8 ? 'red' : 'black';
+            ctx.font = `bold ${this.radius / 4}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(`${this.num}`, this.center_x, this.center_y);

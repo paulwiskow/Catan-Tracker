@@ -143,11 +143,31 @@
     background-color: #e4e4e4;
 }
 
-.option_btn:active {
+.option_btn.active {
     background-color: #5c788c;
     color: #ffffff;
     border-color: #3b4d5a;
 }
+
+.dice_btn {
+    padding: 8px;
+    background-color: #f9f7f1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dice_btn:hover {
+    background-color: #e4e4e4;
+}
+
+.dice_btn.active {
+    background-color: #5c788c;
+    color: #ffffff;
+    border-color: #3b4d5a;
+}
+
 
 .canvas_container canvas {
     display: block;

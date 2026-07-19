@@ -7,14 +7,14 @@
 
     <div class="content">
         <div class="board">
-            <div #canvas_container class="canvas_container">
+            <div #canvas_container (click)="on_canvas_click($event)" class="canvas_container">
                 <!-- Top Left Toolbar -->
                 <div class="canvas_toolbar">
-                    <button [class.active]="active_btn() === 'resource'" (click)="on_resource_btn_click('resource')"
+                    <button [class.active]="active_btn() === 'resource'" (click)="on_active_btn_click('resource')"
                         class="tool_btn">Place Resources</button>
-                    <button [class.active]="active_btn() === 'dice'" (click)="on_resource_btn_click('dice')"
+                    <button [class.active]="active_btn() === 'dice'" (click)="on_active_btn_click('dice')"
                         class="tool_btn">Place Dice</button>
-                    <button [class.active]="active_btn() === 'settle'" (click)="on_resource_btn_click('settle')"
+                    <button [class.active]="active_btn() === 'settle'" (click)="on_active_btn_click('settle')"
                         class="tool_btn">Place Settlements</button>
                 </div>
 
@@ -28,16 +28,15 @@
                     </h3>
 
                     @if (active_btn() === 'resource') {
-                    <!-- Do [class.active] here eventually for option_btn class -->
-                    <button class="option_btn">Wood</button>
-                    <button class="option_btn">Brick</button>
-                    <button class="option_btn">Wheat</button>
-                    <button class="option_btn">Sheep</button>
-                    <button class="option_btn">Ore</button>
-                    <button class="option_btn">Desert</button>
+                    <button [class.active]="resource_btn() === 'wood'" (click)="on_resource_btn_click('wood')" class="option_btn">Wood</button>
+                    <button [class.active]="resource_btn() === 'brick'" (click)="on_resource_btn_click('brick')" class="option_btn">Brick</button>
+                    <button [class.active]="resource_btn() === 'wheat'" (click)="on_resource_btn_click('wheat')" class="option_btn">Wheat</button>
+                    <button [class.active]="resource_btn() === 'sheep'" (click)="on_resource_btn_click('sheep')" class="option_btn">Sheep</button>
+                    <button [class.active]="resource_btn() === 'ore'" (click)="on_resource_btn_click('ore')" class="option_btn">Ore</button>
+                    <button [class.active]="resource_btn() === 'desert'" (click)="on_resource_btn_click('desert')" class="option_btn">Desert</button>
                     }
                     @else if (active_btn() === 'dice') {
-                    <p>dice options</p>
+                    <button [class.active]="dice_btn() === 'wrap-around'" (click)="on_dice_btn_click('wrap-around')" class="dice_btn">Wrap-around</button>
                     }
                     @else if (active_btn() === 'settle') {
                     <p>settle options</p>
