@@ -43,7 +43,9 @@ export class App implements OnDestroy {
 
     public active_btn = signal<"resource" | "dice" | "settle" | null>(null);
     public resource_btn = signal<"wood" | "brick" | "wheat" | "sheep" | "ore" | "desert" | null>(null);
-    public dice_btn = signal<"wrap-around" | null>(null);
+    public dice_btn = signal<"wrap-around" | "manual_select" | null>(null);
+    public show_number_popup = signal(false);
+    public selected_tile_for_num = signal<Hexagon | null>(null);
 
 
     ngAfterViewInit(): void {
@@ -100,7 +102,7 @@ export class App implements OnDestroy {
     }
 
 
-    on_dice_btn_click(btn: "wrap-around"): void {
+    on_dice_btn_click(btn: "wrap-around" | "manual_select"): void {
         if (this.dice_btn() === btn) {
             this.dice_btn.set(null)
         } else {
@@ -112,6 +114,31 @@ export class App implements OnDestroy {
     on_canvas_click(event: MouseEvent): void {
         if (this.active_btn() === 'resource' && this.resource_btn() != null) this.select_tile(event);
         if (this.active_btn() === "dice" && this.dice_btn() === 'wrap-around') this.select_dice_wraparound(event);
+        if (this.active_btn() === "dice" && this.dice_btn() === 'manual_select') this.open_popup(event);
+    }
+
+
+    assign_number(num: number): void {
+        const tile = this.selected_tile_for_num();
+        if (tile) {
+            tile.num = num;
+            tile.draw_hexagon(this.ctx);
+        }
+        this.close_popup();
+    }
+
+
+    open_popup(event: MouseEvent): void {
+        let selected_hex = this.get_tile_from_coords(event);
+        if (selected_hex === null) return;
+        this.show_number_popup.set(true);
+        this.selected_tile_for_num.set(selected_hex);
+    }
+
+
+    close_popup(): void {
+        this.show_number_popup.set(false);
+        this.selected_tile_for_num.set(null);
     }
 
 
@@ -150,13 +177,27 @@ export class App implements OnDestroy {
             nums_idx += 1;
         }
 
-        if (this.center_tile.type === "desert") return;
+        this.dice_btn.set(null);
+        if (this.center_tile.type === "desert") {
+            this.draw_board();
+            return;
+        }
         this.center_tile.num = wrap_nums[nums_idx];
         this.draw_board();
     }
 
 
     select_tile(event: MouseEvent): void {
+        let selected_hex = this.get_tile_from_coords(event);
+        console.log("at least we are clicking");
+        if (selected_hex === null) return;
+        console.log("we have a selected hex");
+        selected_hex.type = this.resource_btn()!;
+        selected_hex.draw_hexagon(this.ctx);
+    }
+
+
+    get_tile_from_coords(event: MouseEvent): Hexagon | null {
         const coords = this.get_canvas_coords(event);
         const tiles = [...this.outer_tiles, ...this.inner_tiles, this.center_tile];
 
@@ -169,10 +210,7 @@ export class App implements OnDestroy {
             }
         }
 
-
-        if (selected_hex === null) return;
-        selected_hex.type = this.resource_btn()!;
-        selected_hex.draw_hexagon(this.ctx);
+        return selected_hex;
     }
 
 

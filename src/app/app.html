@@ -7,7 +7,7 @@
 
     <div class="content">
         <div class="board">
-            <div #canvas_container (click)="on_canvas_click($event)" class="canvas_container">
+            <div #canvas_container class="canvas_container">
                 <!-- Top Left Toolbar -->
                 <div class="canvas_toolbar">
                     <button [class.active]="active_btn() === 'resource'" (click)="on_active_btn_click('resource')"
@@ -28,22 +28,42 @@
                     </h3>
 
                     @if (active_btn() === 'resource') {
+                    <!-- Do [class.active] here eventually for option_btn class -->
                     <button [class.active]="resource_btn() === 'wood'" (click)="on_resource_btn_click('wood')" class="option_btn">Wood</button>
                     <button [class.active]="resource_btn() === 'brick'" (click)="on_resource_btn_click('brick')" class="option_btn">Brick</button>
                     <button [class.active]="resource_btn() === 'wheat'" (click)="on_resource_btn_click('wheat')" class="option_btn">Wheat</button>
                     <button [class.active]="resource_btn() === 'sheep'" (click)="on_resource_btn_click('sheep')" class="option_btn">Sheep</button>
                     <button [class.active]="resource_btn() === 'ore'" (click)="on_resource_btn_click('ore')" class="option_btn">Ore</button>
                     <button [class.active]="resource_btn() === 'desert'" (click)="on_resource_btn_click('desert')" class="option_btn">Desert</button>
-                    }
-                    @else if (active_btn() === 'dice') {
-                    <button [class.active]="dice_btn() === 'wrap-around'" (click)="on_dice_btn_click('wrap-around')" class="dice_btn">Wrap-around</button>
-                    }
-                    @else if (active_btn() === 'settle') {
+                    } @else if (active_btn() === 'dice') {
+                    <button [class.active]="dice_btn() === 'wrap-around'" (click)="on_dice_btn_click('wrap-around')" class="option_btn">Wrap-around</button>
+                    <button [class.active]="dice_btn() === 'manual_select'" (click)="on_dice_btn_click('manual_select')" class="option_btn">Manual Select</button>
+                    } @else if (active_btn() === 'settle') {
                     <p>settle options</p>
                     }
                 </div>
                 }
-                <canvas #my_canvas></canvas>
+                <canvas #my_canvas (click)="on_canvas_click($event)"></canvas>
+
+                @if (show_number_popup()) {
+                    <div class="popup_overlay" (click)="close_popup()">
+                        <div class="popup_menu" (click)="$event.stopPropagation()">
+                            <h4>Select Number</h4>
+                            <div class="popup_grid">
+                                <button (click)="assign_number(2)" class="option_btn">2</button>
+                                <button (click)="assign_number(3)" class="option_btn">3</button>
+                                <button (click)="assign_number(4)" class="option_btn">4</button>
+                                <button (click)="assign_number(5)" class="option_btn">5</button>
+                                <button (click)="assign_number(6)" class="option_btn">6</button>
+                                <button (click)="assign_number(8)" class="option_btn">8</button>
+                                <button (click)="assign_number(9)" class="option_btn">9</button>
+                                <button (click)="assign_number(10)" class="option_btn">10</button>
+                                <button (click)="assign_number(11)" class="option_btn">11</button>
+                                <button (click)="assign_number(12)" class="option_btn">12</button>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
         <div class="players"></div>
