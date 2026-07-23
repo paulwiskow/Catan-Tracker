@@ -203,6 +203,207 @@
     /* Enables vertical scrolling for long player lists */
 }
 
+.players h2 {
+    margin-top: 0;
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.player_card {
+    background-color: #f9f7f1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.player_header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Color Picker */
+.color_picker {
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    flex-shrink: 0;
+}
+
+.color_picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color_picker::-webkit-color-swatch {
+    border: 2px solid #5c788c;
+    border-radius: 50%;
+}
+
+/* Editable Name Input */
+.name_input {
+    flex-grow: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding: 4px 6px;
+    transition: all 0.2s;
+    width: 100px;
+    /* Prevents input from pushing buttons out of flexbox */
+}
+
+.name_input:hover,
+.name_input:focus {
+    border: 1px solid #5c788c;
+    background: #fff;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Header Buttons (Delete & Expand) */
+.action_btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.delete_btn {
+    color: #c62828;
+}
+
+.delete_btn:hover {
+    background-color: #ffebee;
+}
+
+.expand_btn {
+    color: #5c788c;
+    transition: transform 0.3s ease, background-color 0.2s;
+}
+
+.expand_btn:hover {
+    background-color: #e4e4e4;
+}
+
+.expand_btn.open {
+    transform: rotate(180deg);
+}
+
+/* Player Details Dropdown (Visual Only) */
+.player_details {
+    margin-top: 15px;
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.visual_stat_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.empty_msg {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Settlement/City Icons */
+.icon_group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.building_icon {
+    width: 32px;
+    height: 32px;
+}
+
+.stat_badge {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    background-color: #333;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+/* Resource Hexagons */
+.hex_group {
+    display: flex;
+    gap: 8px;
+}
+
+.hex {
+    width: 28px;
+    height: 28px;
+    background-color: #ccc;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Add Player Button */
+.add_player_btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 2px dashed #5c788c;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #5c788c;
+    transition: all 0.2s;
+}
+
+.add_player_btn:hover {
+    background-color: #f9f7f1;
+    border-style: solid;
+}
+
 .dice {
     grid-column: 2 / 3;
     grid-row: 2 / 3;

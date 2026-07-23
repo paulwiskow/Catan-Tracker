@@ -10,66 +10,319 @@
             <div #canvas_container class="canvas_container">
                 <!-- Top Left Toolbar -->
                 <div class="canvas_toolbar">
-                    <button [class.active]="active_btn() === 'resource'" (click)="on_active_btn_click('resource')"
-                        class="tool_btn">Place Resources</button>
-                    <button [class.active]="active_btn() === 'dice'" (click)="on_active_btn_click('dice')"
-                        class="tool_btn">Place Dice</button>
-                    <button [class.active]="active_btn() === 'settle'" (click)="on_active_btn_click('settle')"
-                        class="tool_btn">Place Settlements</button>
+                    <button
+                        [class.active]="active_btn() === 'resource'"
+                        (click)="on_active_btn_click('resource')"
+                        class="tool_btn"
+                    >
+                        Place Resources
+                    </button>
+                    <button
+                        [class.active]="active_btn() === 'dice'"
+                        (click)="on_active_btn_click('dice')"
+                        class="tool_btn"
+                    >
+                        Place Dice
+                    </button>
+                    <button
+                        [class.active]="active_btn() === 'settle'"
+                        (click)="on_active_btn_click('settle')"
+                        class="tool_btn"
+                    >
+                        Place Settlements
+                    </button>
                 </div>
 
                 <!-- Right Side Options Panel Template -->
                 @if (active_btn() != null) {
                 <div class="options_panel">
                     <h3>
-                        @if (active_btn() === 'resource') { Resources }
-                        @else if (active_btn() === 'dice') { Dice Numbers }
-                        @else if (active_btn() === 'settle') { Player Colors }
+                        @if (active_btn() === 'resource') { Resources } @else if
+                        (active_btn() === 'dice') { Dice Numbers } @else if
+                        (active_btn() === 'settle') { Players }
                     </h3>
 
                     @if (active_btn() === 'resource') {
                     <!-- Do [class.active] here eventually for option_btn class -->
-                    <button [class.active]="resource_btn() === 'wood'" (click)="on_resource_btn_click('wood')" class="option_btn">Wood</button>
-                    <button [class.active]="resource_btn() === 'brick'" (click)="on_resource_btn_click('brick')" class="option_btn">Brick</button>
-                    <button [class.active]="resource_btn() === 'wheat'" (click)="on_resource_btn_click('wheat')" class="option_btn">Wheat</button>
-                    <button [class.active]="resource_btn() === 'sheep'" (click)="on_resource_btn_click('sheep')" class="option_btn">Sheep</button>
-                    <button [class.active]="resource_btn() === 'ore'" (click)="on_resource_btn_click('ore')" class="option_btn">Ore</button>
-                    <button [class.active]="resource_btn() === 'desert'" (click)="on_resource_btn_click('desert')" class="option_btn">Desert</button>
+                    <button
+                        [class.active]="resource_btn() === 'wood'"
+                        (click)="on_resource_btn_click('wood')"
+                        class="option_btn"
+                    >
+                        Wood
+                    </button>
+                    <button
+                        [class.active]="resource_btn() === 'brick'"
+                        (click)="on_resource_btn_click('brick')"
+                        class="option_btn"
+                    >
+                        Brick
+                    </button>
+                    <button
+                        [class.active]="resource_btn() === 'wheat'"
+                        (click)="on_resource_btn_click('wheat')"
+                        class="option_btn"
+                    >
+                        Wheat
+                    </button>
+                    <button
+                        [class.active]="resource_btn() === 'sheep'"
+                        (click)="on_resource_btn_click('sheep')"
+                        class="option_btn"
+                    >
+                        Sheep
+                    </button>
+                    <button
+                        [class.active]="resource_btn() === 'ore'"
+                        (click)="on_resource_btn_click('ore')"
+                        class="option_btn"
+                    >
+                        Ore
+                    </button>
+                    <button
+                        [class.active]="resource_btn() === 'desert'"
+                        (click)="on_resource_btn_click('desert')"
+                        class="option_btn"
+                    >
+                        Desert
+                    </button>
                     } @else if (active_btn() === 'dice') {
-                    <button [class.active]="dice_btn() === 'wrap-around'" (click)="on_dice_btn_click('wrap-around')" class="option_btn">Wrap-around</button>
-                    <button [class.active]="dice_btn() === 'manual_select'" (click)="on_dice_btn_click('manual_select')" class="option_btn">Manual Select</button>
-                    } @else if (active_btn() === 'settle') {
-                    <p>settle options</p>
-                    }
+                    <button
+                        [class.active]="dice_btn() === 'wrap-around'"
+                        (click)="on_dice_btn_click('wrap-around')"
+                        class="option_btn"
+                    >
+                        Wrap-around
+                    </button>
+                    <button
+                        [class.active]="dice_btn() === 'manual_select'"
+                        (click)="on_dice_btn_click('manual_select')"
+                        class="option_btn"
+                    >
+                        Manual Select
+                    </button>
+                    } @else if (active_btn() === 'settle') { @for (player of
+                    players; track player.id) {
+                    <button
+                        [class.active]="player_active() === player.id"
+                        (click)="on_player_btn_click(player.id)"
+                        class="option_btn"
+                    >
+                        {{ player.name }}
+                    </button>
+                    } }
                 </div>
                 }
                 <canvas #my_canvas (click)="on_canvas_click($event)"></canvas>
 
                 @if (show_number_popup()) {
-                    <div class="popup_overlay" (click)="close_popup()">
-                        <div class="popup_menu" (click)="$event.stopPropagation()">
-                            <h4>Select Number</h4>
-                            <div class="popup_grid">
-                                <button (click)="assign_number(2)" class="option_btn">2</button>
-                                <button (click)="assign_number(3)" class="option_btn">3</button>
-                                <button (click)="assign_number(4)" class="option_btn">4</button>
-                                <button (click)="assign_number(5)" class="option_btn">5</button>
-                                <button (click)="assign_number(6)" class="option_btn">6</button>
-                                <button (click)="assign_number(8)" class="option_btn">8</button>
-                                <button (click)="assign_number(9)" class="option_btn">9</button>
-                                <button (click)="assign_number(10)" class="option_btn">10</button>
-                                <button (click)="assign_number(11)" class="option_btn">11</button>
-                                <button (click)="assign_number(12)" class="option_btn">12</button>
-                            </div>
+                <div class="popup_overlay" (click)="close_popup()">
+                    <div class="popup_menu" (click)="$event.stopPropagation()">
+                        <h4>Select Number</h4>
+                        <div class="popup_grid">
+                            <button
+                                (click)="assign_number(2)"
+                                class="option_btn"
+                            >
+                                2
+                            </button>
+                            <button
+                                (click)="assign_number(3)"
+                                class="option_btn"
+                            >
+                                3
+                            </button>
+                            <button
+                                (click)="assign_number(4)"
+                                class="option_btn"
+                            >
+                                4
+                            </button>
+                            <button
+                                (click)="assign_number(5)"
+                                class="option_btn"
+                            >
+                                5
+                            </button>
+                            <button
+                                (click)="assign_number(6)"
+                                class="option_btn"
+                            >
+                                6
+                            </button>
+                            <button
+                                (click)="assign_number(8)"
+                                class="option_btn"
+                            >
+                                8
+                            </button>
+                            <button
+                                (click)="assign_number(9)"
+                                class="option_btn"
+                            >
+                                9
+                            </button>
+                            <button
+                                (click)="assign_number(10)"
+                                class="option_btn"
+                            >
+                                10
+                            </button>
+                            <button
+                                (click)="assign_number(11)"
+                                class="option_btn"
+                            >
+                                11
+                            </button>
+                            <button
+                                (click)="assign_number(12)"
+                                class="option_btn"
+                            >
+                                12
+                            </button>
                         </div>
                     </div>
+                </div>
                 }
             </div>
         </div>
-        <div class="players"></div>
+        <div class="players">
+            <h2>Players</h2>
+
+            @for (player of players; track player.id) {
+            <div class="player_card">
+                <!-- Header: Color Picker, Name Input, Delete, Dropdown Toggle -->
+                <div class="player_header">
+                    <input
+                        type="color"
+                        class="color_picker"
+                        [(ngModel)]="player.color"
+                        (ngModelChange)="draw_board()"
+                        title="Change Color"
+                    />
+                    <input
+                        type="text"
+                        class="name_input"
+                        [(ngModel)]="player.name"
+                        placeholder="Player Name"
+                    />
+
+                    <button
+                        class="action_btn delete_btn"
+                        (click)="delete_player(player)"
+                        title="Delete Player"
+                    >
+                        X
+                    </button>
+
+                    <button
+                        class="action_btn expand_btn"
+                        [class.open]="player.showDetails"
+                        (click)="player.showDetails = !player.showDetails"
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                            <!-- Modern Chevron Down Icon -->
+                            <path
+                                d="M6 9 L12 15 L18 9"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Dropdown Details Section (Visual & Read-Only) -->
+                @if (player.showDetails) {
+                <div class="player_details">
+                    @for (settle of player.settlements; track $index) {
+                    <div class="visual_stat_row">
+                        <!-- Settlement or City Icon -->
+                        <div
+                            class="icon_group"
+                            [style.color]="player.color"
+                            [title]="settle.is_city ? 'City' : 'Settlement'"
+                        >
+                            @if (settle.is_city) {
+                            <svg viewBox="0 0 24 24" class="building_icon">
+                                <!-- City shape matching the canvas drawing -->
+                                <path
+                                    d="M 3 21 L 21 21 L 21 13 L 13 13 L 13 5 L 8 1 L 3 5 Z"
+                                    fill="currentColor"
+                                    stroke="black"
+                                    stroke-width="1.5"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            } @else {
+                            <svg viewBox="0 0 24 24" class="building_icon">
+                                <!-- Settlement shape matching the canvas drawing -->
+                                <path
+                                    d="M 4 21 L 20 21 L 20 11 L 12 3 L 4 11 Z"
+                                    fill="currentColor"
+                                    stroke="black"
+                                    stroke-width="1.5"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                            }
+                        </div>
+                        <!-- 3 Resource Hexagons (Tile 1, 2, and 3) -->
+                        <div class="hex_group">
+                            <div
+                                class="hex"
+                                [style.background-color]="get_hex_color(settle.tile1?.type ?? 'desert')"
+                                [style.color]="get_hex_text_color(settle.tile1?.type ?? 'desert')"
+                                [title]="settle.tile1?.type"
+                            >
+                                <span
+                                    >{{ (settle.tile1?.num ?? 0) > 0 ?
+                                    settle.tile1?.num : '-' }}</span
+                                >
+                            </div>
+                            <div
+                                class="hex"
+                                [style.background-color]="get_hex_color(settle.tile2?.type ?? 'desert')"
+                                [style.color]="get_hex_text_color(settle.tile2?.type ?? 'desert')"
+                                [title]="settle.tile2?.type"
+                            >
+                                <span
+                                    >{{ (settle.tile2?.num ?? 0) > 0 ?
+                                    settle.tile2?.num : '-' }}</span
+                                >
+                            </div>
+                            <div
+                                class="hex"
+                                [style.background-color]="get_hex_color(settle.tile3?.type ?? 'desert')"
+                                [style.color]="get_hex_text_color(settle.tile3?.type ?? 'desert')"
+                                [title]="settle.tile3?.type"
+                            >
+                                <span
+                                    >{{ (settle.tile3?.num ?? 0) > 0 ?
+                                    settle.tile3?.num : '-' }}</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- Fallback if the player has nothing built -->
+                    @if (player.settlements.length === 0) {
+                    <p class="empty_msg">No settlements built yet.</p>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <button class="add_player_btn" (click)="add_player()">
+                + Add Player
+            </button>
+        </div>
         <div class="dice"></div>
     </div>
 </main>
-
 
 <router-outlet />
