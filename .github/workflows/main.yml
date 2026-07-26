@@ -34,12 +34,14 @@ jobs:
       - name: Build app
         env:
           CI: false
-        run: npm run build
+        # UPDATE THIS: Tell Angular to use your repo name as the base URL
+        run: npm run build -- --base-href /<your-repo-name>/
 
       - name: Publish build folder to gh-pages (clean replace)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: ./build
+          # UPDATE THIS: Point to Angular's dist folder instead of build
+          publish_dir: ./dist/<your-project-name>/browser 
           force_orphan: true
