@@ -1,0 +1,919 @@
+import {
+    ElementRef,
+    ViewChild,
+    AfterViewInit,
+    Component,
+    signal,
+    OnDestroy,
+} from "@angular/core";
+import { RouterOutlet } from "@angular/router";
+import { FormsModule } from "@angular/forms";
+import { Chart, registerables } from "chart.js"; // <--- NEW IMPORT
+
+// Register all Chart.js components
+Chart.register(...registerables);
+
+type settlement = {
+    center_x: number;
+    center_y: number;
+    tile1: Hexagon | null;
+    tile2: Hexagon | null;
+    tile3: Hexagon | null;
+    is_city: boolean;
+};
+
+type player_track = {
+    wood: number;
+    brick: number;
+    wheat: number;
+    sheep: number;
+    ore: number;
+};
+
+@Component({
+    selector: "app-root",
+    imports: [RouterOutlet, FormsModule],
+    templateUrl: "./app.html",
+    styleUrl: "./app.css",
+})
+export class App implements OnDestroy {
+    protected readonly title = signal("Catan-Tracker");
+
+    @ViewChild("my_canvas") canvas_ref!: ElementRef<HTMLCanvasElement>;
+    @ViewChild("canvas_container") container_ref!: ElementRef<HTMLDivElement>;
+
+    public outer_tiles: Hexagon[] = [];
+    public inner_tiles: Hexagon[] = [];
+    public center_tile!: Hexagon;
+    private ctx!: CanvasRenderingContext2D;
+    private resize_observer!: ResizeObserver;
+    private height!: number;
+    private width!: number;
+
+    public active_btn = signal<
+        "resource" | "dice" | "settle" | "robber" | null
+    >(null);
+    public resource_btn = signal<
+        "wood" | "brick" | "wheat" | "sheep" | "ore" | "desert" | null
+    >(null);
+    public dice_btn = signal<"wrap-around" | "manual_select" | null>(null);
+    public show_number_popup = signal(false);
+    public selected_tile_for_num = signal<Hexagon | null>(null);
+    public robbed_tile: Hexagon | null = null;
+
+    public players: Player[] = [];
+    private next_player_id: number = 1;
+    private available_colors = [
+        "#c62828",
+        "#1565c0",
+        "#ffffff",
+        "#e65100",
+        "#2e7d32",
+        "#6a1b9a",
+    ];
+    public player_active = signal<number | null>(null); // player_id
+
+    public show_history = false;
+    public dice_history: number[] = [];
+    public dice_frequencies: { [key: number]: number } = {
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0,
+        10: 0,
+        11: 0,
+        12: 0,
+    };
+
+    public active_tab: "board" | "graphs" = "board";
+    // Chart Canvas References
+    @ViewChild("dice_chart_canvas")
+    dice_canvas_ref!: ElementRef<HTMLCanvasElement>;
+    @ViewChild("gained_chart_canvas")
+    gained_canvas_ref!: ElementRef<HTMLCanvasElement>;
+    @ViewChild("lost_chart_canvas")
+    lost_canvas_ref!: ElementRef<HTMLCanvasElement>;
+
+    // Store active chart instances so we can destroy and redraw them cleanly
+    private dice_chart: Chart | null = null;
+    private gained_chart: Chart | null = null;
+    private lost_chart: Chart | null = null;
+
+    ngAfterViewInit(): void {
+        this.initialize_tiles();
+        this.ctx = this.canvas_ref.nativeElement.getContext("2d")!;
+
+        this.resize_observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                const { width, height } = entry.contentRect;
+                this.resize_canvas(width, height);
+            }
+        });
+
+        this.resize_observer.observe(this.container_ref.nativeElement);
+    }
+
+    open_graphs_tab(): void {
+        this.active_tab = "graphs";
+
+        // Use a small timeout to ensure the DOM is fully visible before Chart.js tries to draw
+        setTimeout(() => {
+            this.render_charts();
+        }, 50);
+    }
+
+    render_charts(): void {
+        // Destroy existing charts to prevent glitchy overlays when redrawing
+        if (this.dice_chart) this.dice_chart.destroy();
+        if (this.gained_chart) this.gained_chart.destroy();
+        if (this.lost_chart) this.lost_chart.destroy();
+
+        // --- 1. Dice Distribution Chart ---
+        const dice_ctx = this.dice_canvas_ref.nativeElement.getContext("2d")!;
+        this.dice_chart = new Chart(dice_ctx, {
+            type: "bar",
+            data: {
+                labels: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                datasets: [
+                    {
+                        label: "Times Rolled",
+                        data: Object.values(this.dice_frequencies),
+                        // Colors the 6 and 8 red to match the Catan board!
+                        backgroundColor: [
+                            "#5c788c",
+                            "#5c788c",
+                            "#5c788c",
+                            "#5c788c",
+                            "#c62828",
+                            "#5c788c",
+                            "#c62828",
+                            "#5c788c",
+                            "#5c788c",
+                            "#5c788c",
+                            "#5c788c",
+                        ],
+                    },
+                ],
+            },
+            options: {
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+            },
+        });
+
+        // --- Shared Data for Resource Charts ---
+        const player_names = this.players.map((p) => p.name);
+        const resources = ["wood", "brick", "wheat", "sheep", "ore"];
+        const hex_colors = [
+            "#8c560f",
+            "#ce866d",
+            "#e8b339",
+            "#9fe21b",
+            "#a2c9bc",
+        ];
+
+        // --- 2. Resources Gained Chart (Stacked Bar) ---
+        const gained_ctx =
+            this.gained_canvas_ref.nativeElement.getContext("2d")!;
+        this.gained_chart = new Chart(gained_ctx, {
+            type: "bar",
+            data: {
+                labels: player_names,
+                // Maps over the resources to create stacked color blocks for each player
+                datasets: resources.map((res, i) => ({
+                    label: res.charAt(0).toUpperCase() + res.slice(1), // Capitalizes the name
+                    data: this.players.map(
+                        (p) => p.resources_gained[res as keyof player_track],
+                    ),
+                    backgroundColor: hex_colors[i],
+                })),
+            },
+            options: {
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true },
+                },
+            },
+        });
+
+        // --- 3. Resources Lost Chart (Stacked Bar) ---
+        const lost_ctx = this.lost_canvas_ref.nativeElement.getContext("2d")!;
+        this.lost_chart = new Chart(lost_ctx, {
+            type: "bar",
+            data: {
+                labels: player_names,
+                datasets: resources.map((res, i) => ({
+                    label: res.charAt(0).toUpperCase() + res.slice(1),
+                    data: this.players.map(
+                        (p) => p.resources_lost[res as keyof player_track],
+                    ),
+                    backgroundColor: hex_colors[i],
+                })),
+            },
+            options: {
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true },
+                },
+            },
+        });
+    }
+
+    track_dice(num: number): void {
+        this.dice_history.push(num);
+        this.dice_frequencies[num]++;
+        for (const player of this.players) {
+            player.roll_dice(num);
+        }
+    }
+
+    // --- Player Management Methods ---
+    add_player(): void {
+        const name = `Player ${this.next_player_id}`;
+        const color =
+            this.available_colors[
+            (this.next_player_id - 1) % this.available_colors.length
+            ];
+
+        const new_player = new Player(this.next_player_id, name, color);
+        this.players.push(new_player);
+        this.next_player_id++;
+    }
+
+    delete_player(player_to_delete: Player): void {
+        this.players = this.players.filter((p) => p.id !== player_to_delete.id);
+    }
+
+    // --- UI Helper Methods for Hexagon Colors ---
+    get_hex_color(type: string): string {
+        switch (type) {
+            case "wood":
+                return "#8c560f";
+            case "brick":
+                return "#ce866d";
+            case "wheat":
+                return "#e8b339";
+            case "sheep":
+                return "#9fe21b";
+            case "ore":
+                return "#a2c9bc";
+            default:
+                return "#dabf6c"; // desert or empty
+        }
+    }
+
+    get_hex_text_color(type: string): string {
+        // Wheat, sheep, and desert are lighter backgrounds, so they get dark text for contrast
+        return type === "wheat" || type === "sheep" || type === "desert"
+            ? "#333333"
+            : "#ffffff";
+    }
+
+    private initialize_tiles(): void {
+        for (let i = 0; i < 12; i++) {
+            this.outer_tiles.push(new Hexagon(0, 0, 0, "desert", -1));
+        }
+
+        for (let i = 0; i < 6; i++) {
+            this.inner_tiles.push(new Hexagon(0, 0, 0, "desert", -1));
+        }
+
+        this.center_tile = new Hexagon(0, 0, 0, "desert", -1);
+    }
+
+    private resize_canvas(width: number, height: number): void {
+        this.canvas_ref.nativeElement.width = width;
+        this.canvas_ref.nativeElement.height = height;
+        this.height = height;
+        this.width = width;
+
+        this.draw_board();
+    }
+
+    on_active_btn_click(btn: "resource" | "dice" | "settle" | "robber"): void {
+        if (this.active_btn() === btn) {
+            this.active_btn.set(null);
+        } else {
+            this.active_btn.set(btn);
+        }
+    }
+
+    on_resource_btn_click(
+        btn: "wood" | "brick" | "wheat" | "sheep" | "ore" | "desert",
+    ): void {
+        if (this.resource_btn() === btn) {
+            this.resource_btn.set(null);
+        } else {
+            this.resource_btn.set(btn);
+        }
+    }
+
+    on_dice_btn_click(btn: "wrap-around" | "manual_select"): void {
+        if (this.dice_btn() === btn) {
+            this.dice_btn.set(null);
+        } else {
+            this.dice_btn.set(btn);
+        }
+    }
+
+    on_player_btn_click(player_id: number): void {
+        if (this.player_active() === player_id) {
+            this.player_active.set(null);
+        } else {
+            this.player_active.set(player_id);
+        }
+    }
+
+    on_canvas_click(event: MouseEvent): void {
+        if (this.active_btn() === "resource" && this.resource_btn() != null)
+            this.select_tile(event);
+        if (this.active_btn() === "dice" && this.dice_btn() === "wrap-around")
+            this.select_dice_wraparound(event);
+        if (this.active_btn() === "dice" && this.dice_btn() === "manual_select")
+            this.open_popup(event);
+        if (this.active_btn() === "settle" && this.player_active != null)
+            this.player_settle_city(event);
+        if (this.active_btn() === "robber") this.set_robber(event);
+    }
+
+    set_robber(event: MouseEvent): void {
+        let tile: Hexagon | null = this.get_tile_from_coords(event);
+        if (tile === null) return;
+
+        if (this.robbed_tile != null) this.robbed_tile.is_robbed = false;
+        this.robbed_tile = tile;
+        this.robbed_tile.is_robbed = true;
+        this.draw_board();
+    }
+
+    player_settle_city(event: MouseEvent): void {
+        const coords = this.get_canvas_coords(event);
+        const tiles = [
+            ...this.outer_tiles,
+            ...this.inner_tiles,
+            this.center_tile,
+        ];
+
+        let valid_tiles = [];
+        let settle_coords!: { x: number; y: number };
+        const min_radius = this.center_tile.radius / 8;
+        for (const tile of tiles) {
+            let vertices = [];
+            let angle = 30;
+            for (let i = 0; i < 6; i++) {
+                vertices.push({
+                    x:
+                        tile.radius * Math.cos(angle * (Math.PI / 180)) +
+                        tile.center_x,
+                    y:
+                        tile.radius * Math.sin(angle * (Math.PI / 180)) +
+                        tile.center_y,
+                });
+                angle += 60;
+            }
+
+            for (let i = 0; i < 6; i++) {
+                const distance = this.get_distance(
+                    coords["x"],
+                    coords["y"],
+                    vertices[i]["x"],
+                    vertices[i]["y"],
+                );
+                if (distance <= min_radius) {
+                    valid_tiles.push(tile);
+                    settle_coords = vertices[i];
+                    break;
+                }
+            }
+        }
+
+        if (valid_tiles.length === 0) return;
+
+        // have to check if a settlement/city is already here, then we promote or demote -> on promote or demote, prob have to redraw whole board to not have artifacts
+        let player!: Player;
+        for (const p of this.players) {
+            if (p.id === this.player_active()) {
+                player = p;
+                break;
+            }
+        }
+
+        const threshold = 0.1;
+        for (let i = 0; i < player.settlements.length; i++) {
+            if (
+                player.settlements[i]["center_x"] >=
+                settle_coords["x"] - threshold &&
+                player.settlements[i]["center_x"] <=
+                settle_coords["x"] + threshold &&
+                player.settlements[i]["center_y"] >=
+                settle_coords["y"] - threshold &&
+                player.settlements[i]["center_y"] <=
+                settle_coords["y"] + threshold
+            ) {
+                player.settlements[i].is_city = !player.settlements[i].is_city;
+                this.draw_board();
+                return;
+            }
+        }
+
+        // new settlement
+        player.settlements.push({
+            center_x: settle_coords["x"],
+            center_y: settle_coords["y"],
+            tile1: valid_tiles[0],
+            tile2: valid_tiles.length > 0 ? valid_tiles[1] : null,
+            tile3: valid_tiles.length > 1 ? valid_tiles[2] : null,
+            is_city: false,
+        });
+        this.draw_building(
+            player.settlements[player.settlements.length - 1],
+            player,
+        );
+    }
+
+    draw_all_buildings(): void {
+        for (const p of this.players) {
+            for (const settle of p.settlements) {
+                this.draw_building(settle, p);
+            }
+        }
+    }
+
+    draw_building(settle: settlement, player: Player): void {
+        const size = this.center_tile.radius / 5;
+        this.ctx.fillStyle = player.color;
+        this.ctx.strokeStyle = "#000000"; // Black border for contrast
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+
+        if (settle["is_city"]) {
+            // Draw a City (Skyline shape)
+            // Starts bottom-left, goes right, up, creates a tower, and closes
+            this.ctx.moveTo(
+                settle["center_x"] - size,
+                settle["center_y"] + size,
+            ); // Bottom left
+            this.ctx.lineTo(
+                settle["center_x"] + size,
+                settle["center_y"] + size,
+            ); // Bottom right
+            this.ctx.lineTo(settle["center_x"] + size, settle["center_y"]); // Up right side
+            this.ctx.lineTo(settle["center_x"], settle["center_y"]); // In towards middle
+            this.ctx.lineTo(settle["center_x"], settle["center_y"] - size); // Up the tower
+            this.ctx.lineTo(
+                settle["center_x"] - size / 2,
+                settle["center_y"] - size * 1.5,
+            ); // Peak of the tower
+            this.ctx.lineTo(
+                settle["center_x"] - size,
+                settle["center_y"] - size,
+            ); // Down the tower roof
+            this.ctx.lineTo(
+                settle["center_x"] - size,
+                settle["center_y"] + size,
+            ); // Back to bottom left
+        } else {
+            // Draw a Settlement (Simple house shape)
+            this.ctx.moveTo(
+                settle["center_x"] - size,
+                settle["center_y"] + size,
+            ); // Bottom left
+            this.ctx.lineTo(
+                settle["center_x"] + size,
+                settle["center_y"] + size,
+            ); // Bottom right
+            this.ctx.lineTo(
+                settle["center_x"] + size,
+                settle["center_y"] - size / 3,
+            ); // Up right wall
+            this.ctx.lineTo(settle["center_x"], settle["center_y"] - size); // Roof peak
+            this.ctx.lineTo(
+                settle["center_x"] - size,
+                settle["center_y"] - size / 3,
+            ); // Down left roof
+            this.ctx.lineTo(
+                settle["center_x"] - size,
+                settle["center_y"] + size,
+            ); // Back to bottom left
+        }
+
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.closePath();
+    }
+
+    assign_number(num: number): void {
+        const tile = this.selected_tile_for_num();
+        if (tile) {
+            tile.num = num;
+            tile.draw_hexagon(this.ctx);
+        }
+        this.close_popup();
+    }
+
+    open_popup(event: MouseEvent): void {
+        let selected_hex = this.get_tile_from_coords(event);
+        if (selected_hex === null) return;
+        this.show_number_popup.set(true);
+        this.selected_tile_for_num.set(selected_hex);
+    }
+
+    close_popup(): void {
+        this.show_number_popup.set(false);
+        this.selected_tile_for_num.set(null);
+    }
+
+    select_dice_wraparound(event: MouseEvent): void {
+        const wrap_nums = [
+            5, 2, 6, 3, 8, 10, 9, 12, 11, 4, 8, 10, 9, 4, 5, 6, 3, 11,
+        ];
+        let nums_idx = 0;
+
+        const coords = this.get_canvas_coords(event);
+        const min_radius = this.center_tile.radius * (Math.sqrt(3) / 2);
+        let starting_idx = -1;
+        for (let i = 0; i < this.outer_tiles.length; i++) {
+            const tile = this.outer_tiles[i];
+            if (
+                this.get_distance(
+                    coords["x"],
+                    coords["y"],
+                    tile.center_x,
+                    tile.center_y,
+                ) <= min_radius
+            ) {
+                starting_idx = i;
+                break;
+            }
+        }
+
+        if (starting_idx == -1) return;
+        for (
+            let i = starting_idx;
+            i < this.outer_tiles.length + starting_idx;
+            i++
+        ) {
+            const idx = i % this.outer_tiles.length;
+            const tile = this.outer_tiles[idx];
+            if (tile.type === "desert") continue;
+
+            tile.num = wrap_nums[nums_idx];
+            nums_idx += 1;
+        }
+
+        const inner_start =
+            Math.ceil(starting_idx / 2) % this.inner_tiles.length;
+        for (
+            let i = inner_start;
+            i < this.inner_tiles.length + inner_start;
+            i++
+        ) {
+            const idx = i % this.inner_tiles.length;
+            const tile = this.inner_tiles[idx];
+            if (tile.type === "desert") continue;
+
+            tile.num = wrap_nums[nums_idx];
+            nums_idx += 1;
+        }
+
+        this.dice_btn.set(null);
+        if (this.center_tile.type === "desert") {
+            this.draw_board();
+            return;
+        }
+        this.center_tile.num = wrap_nums[nums_idx];
+        this.draw_board();
+    }
+
+    select_tile(event: MouseEvent): void {
+        let selected_hex = this.get_tile_from_coords(event);
+        if (selected_hex === null) return;
+        selected_hex.type = this.resource_btn()!;
+        selected_hex.draw_hexagon(this.ctx);
+    }
+
+    get_tile_from_coords(event: MouseEvent): Hexagon | null {
+        const coords = this.get_canvas_coords(event);
+        const tiles = [
+            ...this.outer_tiles,
+            ...this.inner_tiles,
+            this.center_tile,
+        ];
+
+        let selected_hex: Hexagon | null = null;
+        const min_radius = this.center_tile.radius * (Math.sqrt(3) / 2);
+        for (const tile of tiles) {
+            if (
+                this.get_distance(
+                    coords["x"],
+                    coords["y"],
+                    tile.center_x,
+                    tile.center_y,
+                ) <= min_radius
+            ) {
+                selected_hex = tile;
+                break;
+            }
+        }
+
+        return selected_hex;
+    }
+
+    get_canvas_coords(event: MouseEvent): { x: number; y: number } {
+        const canvas = this.canvas_ref.nativeElement;
+        const rect = canvas.getBoundingClientRect();
+
+        const scale_x = canvas.width / rect.width;
+        const scale_y = canvas.height / rect.height;
+
+        return {
+            x: (event.clientX - rect.left) * scale_x,
+            y: (event.clientY - rect.top) * scale_y,
+        };
+    }
+
+    get_distance(x1: number, y1: number, x2: number, y2: number): number {
+        return Math.sqrt(Math.pow(y1 - y2, 2) + Math.pow(x1 - x2, 2));
+    }
+
+    draw_board(): void {
+        let center_x: number = this.width / 2.5;
+        let center_y: number = this.height / 1.9;
+        let radius: number = Math.min(this.width, this.height) / 10;
+
+        // Angle 0 starts at same place, but goes clockwise instead of counter clockwise
+        // outer ring is 3 radii from center when angle % 60 != 0
+        // Otherwise, it's 4 * (radi / 2) * sqrt(3) = 2 * radi * sqrt(3)
+        // next ring is same thing but only the 60 degree increments
+        let outer_starting_angle: number = 0; // in degrees
+        let dist_30: number = 3 * radius;
+        let dist_60: number = 2 * radius * Math.sqrt(3);
+        for (let i = 0; i < this.outer_tiles.length; i++) {
+            let radians: number = outer_starting_angle * (Math.PI / 180);
+
+            this.outer_tiles[i].center_x =
+                outer_starting_angle % 60 == 0
+                    ? center_x + dist_60 * Math.cos(radians)
+                    : center_x + dist_30 * Math.cos(radians);
+            this.outer_tiles[i].center_y =
+                outer_starting_angle % 60 == 0
+                    ? center_y + dist_60 * Math.sin(radians)
+                    : center_y + dist_30 * Math.sin(radians);
+            this.outer_tiles[i].radius = radius;
+            // this.outer_tiles[i].type = i == 0 ? "wood" : "ore";
+            // this.outer_tiles[i].num = 0;
+
+            this.outer_tiles[i].draw_hexagon(this.ctx);
+            outer_starting_angle -= 30;
+            outer_starting_angle = outer_starting_angle % 360;
+        }
+
+        outer_starting_angle = 0;
+        dist_60 = dist_60 / 2;
+        for (let i = 0; i < this.inner_tiles.length; i++) {
+            let radians: number = outer_starting_angle * (Math.PI / 180);
+            this.inner_tiles[i].center_x =
+                center_x + dist_60 * Math.cos(radians);
+            this.inner_tiles[i].center_y =
+                center_y + dist_60 * Math.sin(radians);
+            this.inner_tiles[i].radius = radius;
+            // this.inner_tiles[i].type = i == 0 ? "brick" : "wheat";
+            // this.inner_tiles[i].num = -1;
+
+            this.inner_tiles[i].draw_hexagon(this.ctx);
+            outer_starting_angle -= 60;
+            outer_starting_angle = outer_starting_angle % 360;
+        }
+
+        this.center_tile.center_x = center_x;
+        this.center_tile.center_y = center_y;
+        this.center_tile.radius = radius;
+        // this.center_tile.type = "sheep";
+        // this.center_tile.num = 6;
+        this.center_tile.draw_hexagon(this.ctx);
+
+        this.draw_all_buildings();
+    }
+
+    ngOnDestroy(): void {
+        if (this.resize_observer) {
+            this.resize_observer.disconnect();
+        }
+    }
+}
+
+class Player {
+    id: number;
+    name: string;
+    color: string;
+    showDetails: boolean;
+
+    settlements: settlement[];
+    resources_gained: player_track;
+    resources_lost: player_track;
+
+    constructor(id: number, name: string, color: string) {
+        this.id = id;
+        this.name = name;
+        this.color = color;
+        this.showDetails = false;
+
+        this.settlements = [];
+        this.resources_gained = {
+            wood: 0,
+            brick: 0,
+            wheat: 0,
+            sheep: 0,
+            ore: 0,
+        };
+        this.resources_lost = { wood: 0, brick: 0, wheat: 0, sheep: 0, ore: 0 };
+    }
+
+    // --- Dynamic Getters for the UI ---
+
+    // Grabs only pure settlements (where is_city is false)
+    get num_settlements(): number {
+        return this.settlements.filter((s) => !s.is_city).length;
+    }
+
+    // Grabs only cities
+    get num_cities(): number {
+        return this.settlements.filter((s) => s.is_city).length;
+    }
+
+    // Calculates the net resources automatically
+    get wood(): number {
+        return this.resources_gained.wood - this.resources_lost.wood;
+    }
+    get brick(): number {
+        return this.resources_gained.brick - this.resources_lost.brick;
+    }
+    get wheat(): number {
+        return this.resources_gained.wheat - this.resources_lost.wheat;
+    }
+    get sheep(): number {
+        return this.resources_gained.sheep - this.resources_lost.sheep;
+    }
+    get ore(): number {
+        return this.resources_gained.ore - this.resources_lost.ore;
+    }
+
+    add_settlement(
+        center_x: number,
+        center_y: number,
+        tile1: Hexagon,
+        tile2: Hexagon,
+        tile3: Hexagon,
+    ): void {
+        this.settlements.push({
+            center_x: center_x,
+            center_y: center_y,
+            tile1: tile1,
+            tile2: tile2,
+            tile3: tile3,
+            is_city: false,
+        });
+        // possibly draw settlement here?
+    }
+
+    roll_dice(num: number): void {
+        const update_vals = (
+            i: number,
+            tile: "tile1" | "tile2" | "tile3",
+            roll: number,
+        ): void => {
+            if (this.settlements[i][tile]?.type === "desert") return;
+            if (this.settlements[i][tile]?.num != roll) return;
+
+            if (!this.settlements[i][tile]?.is_robbed) {
+                this.resources_gained[
+                    this.settlements[i][tile].type as keyof player_track
+                ] += 1 + Number(this.settlements[i]["is_city"]);
+            } else {
+                this.resources_lost[
+                    this.settlements[i][tile].type as keyof player_track
+                ] += 1 + Number(this.settlements[i]["is_city"]);
+            }
+        };
+
+        for (let i = 0; i < this.settlements.length; i++) {
+            update_vals(i, "tile1", num);
+            update_vals(i, "tile2", num);
+            update_vals(i, "tile3", num);
+        }
+    }
+}
+
+class Hexagon {
+    center_x: number;
+    center_y: number;
+    radius: number; // also side length
+    type: string; // desert, wood, brick, wheat, sheep, ore
+    num: number; // die number
+    is_robbed: boolean;
+
+    constructor(
+        center_x: number,
+        center_y: number,
+        radius: number,
+        type: string,
+        num: number,
+    ) {
+        this.center_x = center_x;
+        this.center_y = center_y;
+        this.radius = radius;
+        this.type = type;
+        this.num = num;
+        this.is_robbed = false;
+    }
+
+    draw_hexagon(ctx: CanvasRenderingContext2D): void {
+        ctx.lineWidth = this.radius / 25;
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(this.center_x, this.center_y - this.radius);
+
+        let angle: number = 30; // In degrees
+        let prev_x: number = this.center_x;
+        let prev_y: number = this.center_y - this.radius;
+        for (let i = 0; i < 6; i++) {
+            const radians: number = angle * (Math.PI / 180);
+            const next_x: number = prev_x + this.radius * Math.cos(radians);
+            const next_y: number = prev_y + this.radius * Math.sin(radians);
+
+            ctx.lineTo(next_x, next_y);
+            prev_x = next_x;
+            prev_y = next_y;
+            angle += 60;
+        }
+
+        let color: string = "";
+        switch (this.type) {
+            case "wood":
+                color = "#8c560f";
+                break;
+            case "brick":
+                color = "#ce866d";
+                break;
+            case "wheat":
+                color = "#e8b339";
+                break;
+            case "sheep":
+                color = "#9fe21b";
+                break;
+            case "ore":
+                color = "#a2c9bc";
+                break;
+            default:
+                color = "#dabf6c";
+        }
+
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+
+        if (this.is_robbed) {
+            const offset = this.radius / 2; // Controls the size of the X
+
+            ctx.beginPath();
+            // Use a dark, semi-transparent color or pure black
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.lineWidth = this.radius / 10; // Scales the thickness of the X perfectly
+            ctx.lineCap = "round"; // Gives the ends of the X a smooth, rounded look
+
+            // Draw line from top-left to bottom-right
+            ctx.moveTo(this.center_x - offset, this.center_y - offset);
+            ctx.lineTo(this.center_x + offset, this.center_y + offset);
+
+            // Draw line from top-right to bottom-left
+            ctx.moveTo(this.center_x + offset, this.center_y - offset);
+            ctx.lineTo(this.center_x - offset, this.center_y + offset);
+
+            ctx.stroke();
+            ctx.closePath();
+        } else if (this.type != "desert") {
+            ctx.beginPath();
+            ctx.moveTo(this.center_x, this.center_y);
+            ctx.arc(
+                this.center_x,
+                this.center_y,
+                this.radius / 4,
+                0,
+                2 * Math.PI,
+            );
+            ctx.fillStyle = "#dabf6c";
+            ctx.fill();
+            ctx.closePath();
+
+            ctx.fillStyle = this.num == 6 || this.num == 8 ? "red" : "black";
+            ctx.font = `bold ${this.radius / 4}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(`${this.num}`, this.center_x, this.center_y);
+        }
+    }
+}

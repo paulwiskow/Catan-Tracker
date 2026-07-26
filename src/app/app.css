@@ -1,0 +1,648 @@
+/* Basic reset scoped to your component */
+:host {
+    display: block;
+    height: 100vh;
+    /* Ensure the component takes up the full screen */
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 20px;
+    background-color: #f9f7f1;
+    /* Subtle off-white/parchment background */
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+/* --- Header & Navigation --- */
+.heading {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    min-height: 40px;
+    /* Visual placeholder for tabs */
+    background-color: #e4e4e4;
+    border-radius: 6px;
+    padding: 5px;
+}
+
+/* --- Main Grid Layout --- */
+.content {
+    display: grid;
+    /* 2.5 parts width for the board, 1 part for the right sidebar */
+    grid-template-columns: 2.5fr 1fr;
+    /* Top row (players) stretches, bottom row (dice) fits its content */
+    grid-template-rows: 1fr auto;
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+    /* Critical: allows internal sections to scroll instead of breaking the layout */
+}
+
+/* --- Compartments --- */
+
+.board {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+    background-color: #8faebf;
+    border-radius: 12px;
+    border: 3px solid #5c788c;
+    padding: 10px;
+    /* Optional: adds a neat frame buffer around your canvas area */
+    box-sizing: border-box;
+}
+
+.canvas_container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    /* Crucial for overlaying buttons later */
+}
+
+/* --- Overlay UI Elements --- */
+.canvas_toolbar {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+    /* Forces buttons to render above the canvas */
+}
+
+.tool_btn {
+    padding: 8px 12px;
+    background-color: #ffffff;
+    border: 2px solid #5c788c;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s;
+}
+
+.tool_btn:hover {
+    background-color: #e4e4e4;
+}
+
+.tool_btn.active {
+    background-color: #5c788c;
+    color: #ffffff;
+    border-color: #3b4d5a;
+}
+
+.options_panel {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    bottom: 15px;
+    /* Stretches the panel to fit the height of the board */
+    width: 150px;
+    background-color: rgba(255, 255, 255, 0.9);
+    /* Slightly transparent so canvas peeks through */
+    border: 2px solid #5c788c;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    /* Adds a scrollbar if you add many options */
+}
+
+.options_panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    text-align: center;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.option_btn {
+    padding: 8px;
+    background-color: #f9f7f1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.option_btn:hover {
+    background-color: #e4e4e4;
+}
+
+.option_btn.active {
+    background-color: #5c788c;
+    color: #ffffff;
+    border-color: #3b4d5a;
+}
+
+.popup_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    /* Must be higher than the options_panel */
+}
+
+.popup_menu {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #5c788c;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.popup_menu h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.popup_grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.canvas_container canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.players {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    min-height: 250px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    /* Enables vertical scrolling for long player lists */
+}
+
+.players h2 {
+    margin-top: 0;
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.player_card {
+    background-color: #f9f7f1;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.player_header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Color Picker */
+.color_picker {
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    flex-shrink: 0;
+}
+
+.color_picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color_picker::-webkit-color-swatch {
+    border: 2px solid #5c788c;
+    border-radius: 50%;
+}
+
+/* Editable Name Input */
+.name_input {
+    flex-grow: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding: 4px 6px;
+    transition: all 0.2s;
+    width: 100px;
+    /* Prevents input from pushing buttons out of flexbox */
+}
+
+.name_input:hover,
+.name_input:focus {
+    border: 1px solid #5c788c;
+    background: #fff;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Header Buttons (Delete & Expand) */
+.action_btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.delete_btn {
+    color: #c62828;
+}
+
+.delete_btn:hover {
+    background-color: #ffebee;
+}
+
+.expand_btn {
+    color: #5c788c;
+    transition:
+        transform 0.3s ease,
+        background-color 0.2s;
+}
+
+.expand_btn:hover {
+    background-color: #e4e4e4;
+}
+
+.expand_btn.open {
+    transform: rotate(180deg);
+}
+
+/* Player Details Dropdown (Visual Only) */
+.player_details {
+    margin-top: 15px;
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.visual_stat_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.empty_msg {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Settlement/City Icons */
+.icon_group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.building_icon {
+    width: 32px;
+    height: 32px;
+}
+
+.stat_badge {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    background-color: #333;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+}
+
+/* Resource Hexagons */
+.hex_group {
+    display: flex;
+    gap: 8px;
+}
+
+.hex {
+    width: 28px;
+    height: 28px;
+    background-color: #ccc;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Add Player Button */
+.add_player_btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 2px dashed #5c788c;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #5c788c;
+    transition: all 0.2s;
+}
+
+.add_player_btn:hover {
+    background-color: #f9f7f1;
+    border-style: solid;
+}
+
+.dice {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    min-height: 250px;
+    /* Fixed minimum height so the dice section never gets too squished */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Spaces out the input area and the history log */
+}
+
+/* --- Dice Tracker Section --- */
+.dice h2 {
+    margin-top: 0;
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* 2x13 Table Styling */
+.dice_table_wrapper {
+    overflow-x: auto;
+    /* Prevents overflow on smaller screens */
+    margin-bottom: 10px;
+}
+
+.dice_grid {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.dice_grid th,
+.dice_grid td {
+    border: 1px solid #ddd;
+    padding: 6px 2px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.label_col {
+    width: 40px;
+    text-align: left !important;
+    padding-left: 6px !important;
+    font-size: 13px;
+    color: #666;
+    font-weight: bold;
+    background-color: #f9f7f1;
+}
+
+.total_col {
+    width: 35px;
+    font-size: 13px;
+    color: #666;
+    background-color: #f9f7f1;
+}
+
+.total_cell {
+    font-weight: bold;
+    color: #333;
+    background-color: #f9f7f1;
+}
+
+/* Clickable Dice Buttons */
+.roll_btn {
+    width: 100%;
+    height: 30px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.roll_btn:hover {
+    background-color: #e4e4e4;
+    border-color: #5c788c;
+}
+
+.red_text {
+    color: #c62828;
+}
+
+.freq_cell {
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+    background-color: #fafafa;
+}
+
+/* History Dropdown Toggle */
+.history_section {
+    margin-top: auto;
+    /* Pushes it to the bottom of the flex container */
+    display: flex;
+    flex-direction: column;
+}
+
+.history_toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #f9f7f1;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #5c788c;
+    transition: background-color 0.2s;
+}
+
+.history_toggle:hover {
+    background-color: #e4e4e4;
+}
+
+.chevron {
+    transition: transform 0.3s ease;
+}
+
+.chevron.open {
+    transform: rotate(180deg);
+}
+
+/* History Log Area */
+.history_log {
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 80px;
+    overflow-y: auto;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Individual Roll Badges */
+.history_badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color: #f9f7f1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+}
+
+.history_badge.red_badge {
+    color: #c62828;
+    background-color: #ffebee;
+    border-color: #ffcdd2;
+}
+
+/* --- Tab Buttons --- */
+.tab_btn {
+    padding: 8px 16px;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.tab_btn:hover {
+    background-color: #d4d4d4;
+}
+
+.tab_btn.active {
+    background-color: #ffffff;
+    color: #5c788c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Graphs View --- */
+.graphs_content {
+    /* The inline HTML [style.display] will override this when hidden, 
+       but this sets the default structure when visible */
+    display: grid;
+
+    /* Forces exactly 2 columns and 2 rows (a 2x2 grid, 4 slots) */
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 20px;
+    flex-grow: 1;
+    min-height: 0;
+    /* Crucial: Prevents the grid from blowing out the screen height */
+    padding-bottom: 20px;
+}
+
+.chart_card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    /* Allows the card to shrink dynamically to fit the 50% row height */
+}
+
+.chart_card h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    text-align: center;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.canvas_wrapper {
+    position: relative;
+    flex-grow: 1;
+    width: 100%;
+    min-height: 0;
+}
