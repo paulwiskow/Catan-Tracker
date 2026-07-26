@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # A solid, modern LTS version
+          node-version: '24' # A solid, modern LTS version
           cache: 'npm'       # Speeds up runs by caching node_modules
 
       - name: Install Dependencies
