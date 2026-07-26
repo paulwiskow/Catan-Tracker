@@ -35,7 +35,7 @@ jobs:
         env:
           CI: false
         # UPDATE THIS: Tell Angular to use your repo name as the base URL
-        run: npm run build -- --base-href /<your-repo-name>/
+        run: npm run build -- --base-href /Catan-Tracker/
 
       - name: Publish build folder to gh-pages (clean replace)
         uses: peaceiris/actions-gh-pages@v4
@@ -43,5 +43,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           # UPDATE THIS: Point to Angular's dist folder instead of build
-          publish_dir: ./dist/<your-project-name>/browser 
+          publish_dir: ./dist/Catan-Tracker/browser 
           force_orphan: true
