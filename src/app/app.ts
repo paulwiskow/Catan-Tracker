@@ -8,6 +8,10 @@ import {
 } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
 import { FormsModule } from "@angular/forms";
+import { Chart, registerables } from "chart.js"; // <--- NEW IMPORT
+
+// Register all Chart.js components
+Chart.register(...registerables);
 
 type settlement = {
     center_x: number;
@@ -66,6 +70,33 @@ export class App implements OnDestroy {
     ];
     public player_active = signal<number | null>(null); // player_id
 
+    public show_history = false;
+    public dice_history: number[] = [];
+    public dice_frequencies: { [key: number]: number } = {
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0,
+        10: 0,
+        11: 0,
+        12: 0,
+    };
+
+    public active_tab: "board" | "graphs" = "board";
+    // Chart Canvas References
+    @ViewChild('dice_chart_canvas') dice_canvas_ref!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('gained_chart_canvas') gained_canvas_ref!: ElementRef<HTMLCanvasElement>;
+    @ViewChild('lost_chart_canvas') lost_canvas_ref!: ElementRef<HTMLCanvasElement>;
+
+    // Store active chart instances so we can destroy and redraw them cleanly
+    private dice_chart: Chart | null = null;
+    private gained_chart: Chart | null = null;
+    private lost_chart: Chart | null = null;
+
     ngAfterViewInit(): void {
         this.initialize_tiles();
         this.ctx = this.canvas_ref.nativeElement.getContext("2d")!;
@@ -78,6 +109,88 @@ export class App implements OnDestroy {
         });
 
         this.resize_observer.observe(this.container_ref.nativeElement);
+    }
+
+
+    open_graphs_tab(): void {
+        this.active_tab = 'graphs';
+
+        // Use a small timeout to ensure the DOM is fully visible before Chart.js tries to draw
+        setTimeout(() => {
+            this.render_charts();
+        }, 50);
+    }
+
+    render_charts(): void {
+        // Destroy existing charts to prevent glitchy overlays when redrawing
+        if (this.dice_chart) this.dice_chart.destroy();
+        if (this.gained_chart) this.gained_chart.destroy();
+        if (this.lost_chart) this.lost_chart.destroy();
+
+        // --- 1. Dice Distribution Chart ---
+        const dice_ctx = this.dice_canvas_ref.nativeElement.getContext('2d')!;
+        this.dice_chart = new Chart(dice_ctx, {
+            type: 'bar',
+            data: {
+                labels: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                datasets: [{
+                    label: 'Times Rolled',
+                    data: Object.values(this.dice_frequencies),
+                    // Colors the 6 and 8 red to match the Catan board!
+                    backgroundColor: [
+                        '#5c788c', '#5c788c', '#5c788c', '#5c788c',
+                        '#c62828', '#5c788c', '#c62828',
+                        '#5c788c', '#5c788c', '#5c788c', '#5c788c'
+                    ]
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+
+        // --- Shared Data for Resource Charts ---
+        const player_names = this.players.map(p => p.name);
+        const resources = ['wood', 'brick', 'wheat', 'sheep', 'ore'];
+        const hex_colors = ['#8c560f', '#ce866d', '#e8b339', '#9fe21b', '#a2c9bc'];
+
+        // --- 2. Resources Gained Chart (Stacked Bar) ---
+        const gained_ctx = this.gained_canvas_ref.nativeElement.getContext('2d')!;
+        this.gained_chart = new Chart(gained_ctx, {
+            type: 'bar',
+            data: {
+                labels: player_names,
+                // Maps over the resources to create stacked color blocks for each player
+                datasets: resources.map((res, i) => ({
+                    label: res.charAt(0).toUpperCase() + res.slice(1), // Capitalizes the name
+                    data: this.players.map(p => p.resources_gained[res as keyof player_track]),
+                    backgroundColor: hex_colors[i]
+                }))
+            },
+            options: { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+        });
+
+        // --- 3. Resources Lost Chart (Stacked Bar) ---
+        const lost_ctx = this.lost_canvas_ref.nativeElement.getContext('2d')!;
+        this.lost_chart = new Chart(lost_ctx, {
+            type: 'bar',
+            data: {
+                labels: player_names,
+                datasets: resources.map((res, i) => ({
+                    label: res.charAt(0).toUpperCase() + res.slice(1),
+                    data: this.players.map(p => p.resources_lost[res as keyof player_track]),
+                    backgroundColor: hex_colors[i]
+                }))
+            },
+            options: { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+        });
+    }
+
+
+    track_dice(num: number): void {
+        this.dice_history.push(num);
+        this.dice_frequencies[num]++;
+        for (const player of this.players) {
+            player.roll_dice(num);
+        }
     }
 
     // --- Player Management Methods ---
@@ -429,9 +542,7 @@ export class App implements OnDestroy {
 
     select_tile(event: MouseEvent): void {
         let selected_hex = this.get_tile_from_coords(event);
-        console.log("at least we are clicking");
         if (selected_hex === null) return;
-        console.log("we have a selected hex");
         selected_hex.type = this.resource_btn()!;
         selected_hex.draw_hexagon(this.ctx);
     }
@@ -619,15 +730,6 @@ class Player {
         });
         // possibly draw settlement here?
     }
-
-    // Have to figure out who's settlement it is when citying
-    // Also have to set a radius for the click radius
-    is_my_settlement(center_x: number, center_y: number): boolean {
-        return false;
-    }
-
-    // I think we find out the settlement by coordinate, not by reference
-    city_up(center_x: number, center_y: number): void { }
 
     roll_dice(num: number): void {
         const update_vals = (

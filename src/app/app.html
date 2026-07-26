@@ -3,9 +3,27 @@
         <h1>Catan-Tracker</h1>
     </div>
 
-    <div class="tabs"></div>
+    <div class="tabs">
+        <button
+            class="tab_btn"
+            [class.active]="active_tab === 'board'"
+            (click)="active_tab = 'board'"
+        >
+            Game Board
+        </button>
+        <button
+            class="tab_btn"
+            [class.active]="active_tab === 'graphs'"
+            (click)="open_graphs_tab()"
+        >
+            Graphs
+        </button>
+    </div>
 
-    <div class="content">
+    <div
+        class="content"
+        [style.display]="active_tab === 'board' ? 'grid' : 'none'"
+    >
         <div class="board">
             <div #canvas_container class="canvas_container">
                 <!-- Top Left Toolbar -->
@@ -321,7 +339,119 @@
                 + Add Player
             </button>
         </div>
-        <div class="dice"></div>
+        <div class="dice">
+            <h2>Dice Tracker</h2>
+
+            <!-- 2x13 Dice Grid -->
+            <div class="dice_table_wrapper">
+                <table class="dice_grid">
+                    <!-- Row 1: Clickable Dice Numbers -->
+                    <tr>
+                        <th class="label_col">Roll</th>
+                        @for (num of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track
+                        $index) {
+                        <td>
+                            <button
+                                class="roll_btn"
+                                [class.red_text]="num === 6 || num === 8"
+                                (click)="track_dice(num)"
+                                title="Record a {{ num }}"
+                            >
+                                {{ num }}
+                            </button>
+                        </td>
+                        }
+                        <th class="total_col">Tot</th>
+                    </tr>
+
+                    <!-- Row 2: Frequencies -->
+                    <tr>
+                        <th class="label_col">Freq</th>
+                        @for (num of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track
+                        $index) {
+                        <td class="freq_cell">
+                            {{ dice_frequencies[num] || 0 }}
+                        </td>
+                        }
+                        <!-- Total Rolls Count -->
+                        <td class="total_cell">
+                            {{ dice_history.length || 0 }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Dice History Dropdown -->
+            <div class="history_section">
+                <button
+                    class="history_toggle"
+                    (click)="show_history = !show_history"
+                >
+                    <span>View Roll History</span>
+                    <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        class="chevron"
+                        [class.open]="show_history"
+                    >
+                        <path
+                            d="M6 9 L12 15 L18 9"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                    </svg>
+                </button>
+
+                @if (show_history) {
+                <div class="history_log">
+                    @for (roll of dice_history.slice().reverse(); track $index)
+                    {
+                    <span
+                        class="history_badge"
+                        [class.red_badge]="roll === 6 || roll === 8"
+                    >
+                        {{ roll }}
+                    </span>
+                    } @if (dice_history.length === 0) {
+                    <p class="empty_msg">No rolls tracked yet.</p>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div
+        class="graphs_content"
+        [style.display]="active_tab === 'graphs' ? 'grid' : 'none'"
+    >
+        <!-- Dice Distribution -->
+        <div class="chart_card">
+            <h3>Dice Distribution</h3>
+            <div class="canvas_wrapper">
+                <canvas #dice_chart_canvas></canvas>
+            </div>
+        </div>
+
+        <!-- Resources Gained -->
+        <div class="chart_card">
+            <h3>Resources Gained</h3>
+            <div class="canvas_wrapper">
+                <canvas #gained_chart_canvas></canvas>
+            </div>
+        </div>
+
+        <!-- Resources Lost -->
+        <div class="chart_card">
+            <h3>Resources Lost</h3>
+            <div class="canvas_wrapper">
+                <canvas #lost_chart_canvas></canvas>
+            </div>
+        </div>
     </div>
 </main>
 
