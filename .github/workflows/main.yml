@@ -1,47 +1,51 @@
-name: Deploy to gh-pages
+name: Deploy Angular to GitHub Pages
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches: [ main ] # Triggers automatically on push to main
+  workflow_dispatch:   # Allows you to click a "Run workflow" button manually
 
+# Required to allow the action to push the built code to the gh-pages branch
 permissions:
   contents: write
 
+# Cancels any ongoing previous builds if you push new code quickly
 concurrency:
-  group: deploy-pages
+  group: "gh-pages-deploy"
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout main
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          ref: main
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
-          cache: npm
+          node-version: '20' # A solid, modern LTS version
+          cache: 'npm'       # Speeds up runs by caching node_modules
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: Build app
-        env:
-          CI: false
-        # UPDATE THIS: Tell Angular to use your repo name as the base URL
-        run: npm run build -- --base-href /Catan-Tracker/
+      - name: Build Angular Project
+        # The dynamic variable ${{ github.event.repository.name }} ensures the base-href 
+        # is always perfectly matched to your GitHub URL, even if you rename the repo later!
+        run: npm run build -- --base-href /${{ github.event.repository.name }}/
 
-      - name: Publish build folder to gh-pages (clean replace)
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          # UPDATE THIS: Point to Angular's dist folder instead of build
-          publish_dir: /home/runner/work/Catan-Tracker/Catan-Tracker/dist/test
+          
+          # UPDATE THIS LINE: Point to your angular.json "outputPath"
+          # Angular 17+ defaults to: ./dist/<project-name>/browser
+          # Older Angular defaults to: ./dist/<project-name>
+          publish_dir: ./dist/test/browser 
+          
+          # Keeps your gh-pages branch clean by wiping old history
           force_orphan: true
