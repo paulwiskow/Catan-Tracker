@@ -49,10 +49,17 @@
                     >
                         Place Settlements
                     </button>
+                    <button
+                        [class.active]="active_btn() === 'robber'"
+                        (click)="on_active_btn_click('robber')"
+                        class="tool_btn"
+                    >
+                        Robber
+                    </button>
                 </div>
 
                 <!-- Right Side Options Panel Template -->
-                @if (active_btn() != null) {
+                @if (active_btn() != null && active_btn() != 'robber') {
                 <div class="options_panel">
                     <h3>
                         @if (active_btn() === 'resource') { Resources } @else if
