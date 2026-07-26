@@ -43,5 +43,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           # UPDATE THIS: Point to Angular's dist folder instead of build
-          publish_dir: ./dist/Catan-Tracker/browser 
+          publish_dir: /home/runner/work/Catan-Tracker/Catan-Tracker/dist/test
           force_orphan: true
